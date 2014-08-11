@@ -48,11 +48,6 @@ func ReflectFromType(t reflect.Type) *Schema {
 		Type:        reflectTypeToSchema(definitions, t),
 		Definitions: definitions,
 	}
-	if len(s.Definitions) == 1 {
-		for _, t := range s.Definitions {
-			return &Schema{Type: t}
-		}
-	}
 	return s
 }
 
