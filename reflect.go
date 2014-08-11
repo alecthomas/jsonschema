@@ -39,8 +39,11 @@ type Schema struct {
 
 // Reflect a Schema from a value.
 func Reflect(v interface{}) *Schema {
+	return ReflectFromType(reflect.TypeOf(v))
+}
+
+func ReflectFromType(t reflect.Type) *Schema {
 	definitions := Definitions{}
-	t := reflect.TypeOf(v)
 	s := &Schema{
 		Type:        reflectTypeToSchema(definitions, t),
 		Definitions: definitions,
