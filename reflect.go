@@ -34,7 +34,7 @@ type Type struct {
 
 type Schema struct {
 	*Type
-	Definitions Definitions `json:"definitions"`
+	Definitions Definitions `json:"definitions,omitempty"`
 }
 
 // Reflect a Schema from a value.
@@ -44,6 +44,11 @@ func Reflect(v interface{}) *Schema {
 	s := &Schema{
 		Type:        reflectTypeToSchema(definitions, t),
 		Definitions: definitions,
+	}
+	if len(s.Definitions) == 1 {
+		for _, t := range s.Definitions {
+			return &Schema{Type: t}
+		}
 	}
 	return s
 }
