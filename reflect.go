@@ -30,6 +30,13 @@ type Type struct {
 	AdditionalProperties json.RawMessage  `json:"additionalProperties,omitempty"`
 	Ref                  string           `json:"$ref,omitempty"`
 	Required             []string         `json:"required,omitempty"`
+	MaxLength            int              `json:"maxLength,omitempty"`
+	MinLength            int              `json:"minLength,omitempty"`
+	Pattern              string           `json:"pattern,omitempty"`
+	Enum                 []interface{}    `json:"enum,omitempty"`
+	Default              interface{}      `json:"default,omitempty"`
+	Title                string           `json:"title,omitempty"`
+	Description          string           `json:"description,omitempty"`
 }
 
 type Schema struct {
