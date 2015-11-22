@@ -132,6 +132,9 @@ func reflectStruct(definitions Definitions, t reflect.Type) *Type {
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 		name, required := reflectFieldName(f)
+		if name == "" {
+			continue
+		}
 		st.Properties[name] = reflectTypeToSchema(definitions, f.Type)
 		if required {
 			st.Required = append(st.Required, name)
@@ -141,10 +144,10 @@ func reflectStruct(definitions Definitions, t reflect.Type) *Type {
 }
 
 func reflectFieldName(f reflect.StructField) (string, bool) {
-	name := f.Name
+	var name string
 	required := true
 	parts := strings.Split(f.Tag.Get("json"), ",")
-	if parts[0] != "" {
+	if parts[0] != "" && parts[0] != "-" {
 		name = parts[0]
 	}
 	if len(parts) > 1 && parts[1] == "omitempty" {
