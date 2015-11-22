@@ -144,12 +144,18 @@ func reflectStruct(definitions Definitions, t reflect.Type) *Type {
 }
 
 func reflectFieldName(f reflect.StructField) (string, bool) {
-	var name string
-	required := true
 	parts := strings.Split(f.Tag.Get("json"), ",")
-	if parts[0] != "" && parts[0] != "-" {
+	if parts[0] == "-" {
+		return "", false
+	}
+
+	name := f.Name
+	required := true
+
+	if parts[0] != "" {
 		name = parts[0]
 	}
+
 	if len(parts) > 1 && parts[1] == "omitempty" {
 		required = false
 	}

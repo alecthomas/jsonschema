@@ -34,13 +34,20 @@ func TestIgnoredProperties(t *testing.T) {
 		"friends":    true,
 		"tags":       true,
 		"birth_date": true,
+		"TestFlag":   true,
 	}
 
 	props := s.Definitions["TestUser"].Properties
 
 	for defKey := range props {
 		if _, ok := expectedProperties[defKey]; !ok {
-			t.Fatalf("unexpected property %s", defKey)
+			t.Fatalf("unexpected property '%s'", defKey)
+		}
+	}
+
+	for defKey := range expectedProperties {
+		if _, ok := props[defKey]; !ok {
+			t.Fatalf("expected property missing '%s'", defKey)
 		}
 	}
 }
