@@ -129,8 +129,24 @@ func reflectStruct(definitions Definitions, t reflect.Type) *Type {
 		AdditionalProperties: []byte("false"),
 	}
 	definitions[t.Name()] = st
+	reflectStructFields(st, definitions, t)
+
+	return &Type{Ref: "#/definitions/" + t.Name()}
+}
+
+func reflectStructFields(st *Type, definitions Definitions, t reflect.Type) {
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
+		// anonymous and exported type should be processed recursively
+		// current type should inherit properties of anonymous one
+		if f.Anonymous && f.PkgPath == "" {
+			reflectStructFields(st, definitions, f.Type)
+			continue
+		}
+
 		name, required := reflectFieldName(f)
 		if name == "" {
 			continue
@@ -140,10 +156,12 @@ func reflectStruct(definitions Definitions, t reflect.Type) *Type {
 			st.Required = append(st.Required, name)
 		}
 	}
-	return &Type{Ref: "#/definitions/" + t.Name()}
 }
 
 func reflectFieldName(f reflect.StructField) (string, bool) {
+	if f.PkgPath != "" { // unexported field, ignore it
+		return "", false
+	}
 	parts := strings.Split(f.Tag.Get("json"), ",")
 	if parts[0] == "-" {
 		return "", false
