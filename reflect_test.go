@@ -45,23 +45,28 @@ type TestUser struct {
 func TestSchemaGeneration(t *testing.T) {
 	s := Reflect(&TestUser{})
 
-	expectedProperties := map[string]bool{
-		"id":                       true,
-		"name":                     true,
-		"friends":                  true,
-		"tags":                     true,
-		"birth_date":               true,
-		"TestFlag":                 true,
-		"some_base_property":       true,
-		"grand":                    true,
-		"SomeUntaggedBaseProperty": true,
+	expectedProperties := map[string]string{
+		"id":                       "integer",
+		"name":                     "string",
+		"friends":                  "array",
+		"tags":                     "object",
+		"birth_date":               "string",
+		"TestFlag":                 "boolean",
+		"some_base_property":       "integer",
+		"grand":                    "#/definitions/GrandfatherType",
+		"SomeUntaggedBaseProperty": "boolean",
 	}
 
 	props := s.Definitions["TestUser"].Properties
-
-	for defKey := range props {
-		if _, ok := expectedProperties[defKey]; !ok {
+	for defKey, prop := range props {
+		typeOrRef, ok := expectedProperties[defKey]
+		if !ok {
 			t.Fatalf("unexpected property '%s'", defKey)
+		}
+		if prop.Type != "" && prop.Type != typeOrRef {
+			t.Fatalf("expected property type '%s', got '%s' for property '%s'", typeOrRef, prop.Type, defKey)
+		} else if prop.Ref != "" && prop.Ref != typeOrRef {
+			t.Fatalf("expected reference to '%s', got '%s' for property '%s'", typeOrRef, prop.Ref, defKey)
 		}
 	}
 
