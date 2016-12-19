@@ -22,6 +22,7 @@ Results in this JSON Schema:
 
 ```json
 {
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "$ref": "#/definitions/TestUser",
   "definitions": {
     "TestUser": {
@@ -54,10 +55,7 @@ Results in this JSON Schema:
         }
       },
       "additionalProperties": false,
-      "required": [
-        "id",
-        "name"
-      ]
+      "required": ["id", "name"]
     }
   }
 }
