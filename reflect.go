@@ -15,6 +15,10 @@ import (
 	"time"
 )
 
+// Version is the JSON Schema version.
+// If extending JSON Schema with custom values use a custom URI.
+var Version = "http://json-schema.org/draft-04/schema#"
+
 var (
 	timeType = reflect.TypeOf(time.Time{})
 	ipType   = reflect.TypeOf(net.IP{})
@@ -28,6 +32,7 @@ type Type struct {
 	Properties           map[string]*Type `json:"properties,omitempty"`
 	PatternProperties    map[string]*Type `json:"patternProperties,omitempty"`
 	AdditionalProperties json.RawMessage  `json:"additionalProperties,omitempty"`
+	Version              string           `json:"$schema,omitempty"`
 	Ref                  string           `json:"$ref,omitempty"`
 	Required             []string         `json:"required,omitempty"`
 	MaxLength            int              `json:"maxLength,omitempty"`
@@ -131,7 +136,10 @@ func reflectStruct(definitions Definitions, t reflect.Type) *Type {
 	definitions[t.Name()] = st
 	reflectStructFields(st, definitions, t)
 
-	return &Type{Ref: "#/definitions/" + t.Name()}
+	return &Type{
+		Version: Version,
+		Ref:     "#/definitions/" + t.Name(),
+	}
 }
 
 func reflectStructFields(st *Type, definitions Definitions, t reflect.Type) {
