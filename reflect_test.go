@@ -1,6 +1,8 @@
 package jsonschema
 
 import (
+	"net"
+	"net/url"
 	"testing"
 	"time"
 )
@@ -28,14 +30,18 @@ type TestUser struct {
 	SomeBaseType
 	nonExported
 
-	ID        int                    `json:"id"`
-	Name      string                 `json:"name"`
-	Friends   []int                  `json:"friends,omitempty"`
-	Tags      map[string]interface{} `json:"tags,omitempty"`
-	BirthDate time.Time              `json:"birth_date,omitempty"`
+	ID      int                    `json:"id"`
+	Name    string                 `json:"name"`
+	Friends []int                  `json:"friends,omitempty"`
+	Tags    map[string]interface{} `json:"tags,omitempty"`
 
 	TestFlag       bool
 	IgnoredCounter int `json:"-"`
+
+	// Tests for RFC draft-wright-json-schema-validation-00, section 7.3
+	BirthDate time.Time `json:"birth_date,omitempty"`
+	Website   url.URL   `json:"website,omitempty"`
+	IPAddress net.IP    `json:"network_address,omitempty"`
 }
 
 // TestSchemaGeneration checks if schema generated correctly:
@@ -55,6 +61,8 @@ func TestSchemaGeneration(t *testing.T) {
 		"some_base_property":       "integer",
 		"grand":                    "#/definitions/GrandfatherType",
 		"SomeUntaggedBaseProperty": "boolean",
+		"website":                  "string",
+		"network_address":          "string",
 	}
 
 	props := s.Definitions["TestUser"].Properties
