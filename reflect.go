@@ -65,6 +65,9 @@ type Type struct {
 	Description string      `json:"description,omitempty"` // section 6.1
 	Default     interface{} `json:"default,omitempty"`     // section 6.2
 	Format      string      `json:"format,omitempty"`      // section 7
+	// RFC draft-wright-json-schema-hyperschema-00, section 4
+	Media          *Type  `json:"media,omitempty"`          // section 4.3
+	BinaryEncoding string `json:"binaryEncoding,omitempty"` // section 4.3
 }
 
 // Reflect reflects to Schema from a value.
@@ -94,6 +97,9 @@ var (
 	ipType   = reflect.TypeOf(net.IP{})    // ipv4 and ipv6 RFC section 7.3.4, 7.3.5
 	uriType  = reflect.TypeOf(url.URL{})   // uri RFC section 7.3.6
 )
+
+// Byte slices will be encoded as base64
+var byteSliceType = reflect.TypeOf([]byte(nil))
 
 func reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
@@ -132,9 +138,17 @@ func reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 		return rt
 
 	case reflect.Slice:
-		return &Type{
-			Type:  "array",
-			Items: reflectTypeToSchema(definitions, t.Elem()),
+		switch t {
+		case byteSliceType:
+			return &Type{
+				Type:  "string",
+				Media: &Type{BinaryEncoding: "base64"},
+			}
+		default:
+			return &Type{
+				Type:  "array",
+				Items: reflectTypeToSchema(definitions, t.Elem()),
+			}
 		}
 
 	case reflect.Interface:

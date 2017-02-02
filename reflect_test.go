@@ -42,6 +42,9 @@ type TestUser struct {
 	BirthDate time.Time `json:"birth_date,omitempty"`
 	Website   url.URL   `json:"website,omitempty"`
 	IPAddress net.IP    `json:"network_address,omitempty"`
+
+	// Tests for RFC draft-wright-json-schema-hyperschema-00, section 4
+	Photo []byte `json:"photo,omitempty"`
 }
 
 // TestSchemaGeneration checks if schema generated correctly:
@@ -63,6 +66,7 @@ func TestSchemaGeneration(t *testing.T) {
 		"SomeUntaggedBaseProperty": "boolean",
 		"website":                  "string",
 		"network_address":          "string",
+		"photo":                    "string",
 	}
 
 	props := s.Definitions["TestUser"].Properties
@@ -75,6 +79,19 @@ func TestSchemaGeneration(t *testing.T) {
 			t.Fatalf("expected property type '%s', got '%s' for property '%s'", typeOrRef, prop.Type, defKey)
 		} else if prop.Ref != "" && prop.Ref != typeOrRef {
 			t.Fatalf("expected reference to '%s', got '%s' for property '%s'", typeOrRef, prop.Ref, defKey)
+		}
+
+		if prop.Media != nil {
+			if prop.Type != "string" {
+				t.Fatalf("expected property type 'string' due to existence of 'media' property, got '%s'", prop.Type)
+			}
+
+			// Technically this is case insensitive and could be a handful of
+			// other encoding types per RFC 2046 section 6.1, but this code
+			// naively assumes byte slices will encode to base64 strings.
+			if prop.Media.BinaryEncoding != "base64" {
+				t.Fatalf("expected 'base64' binary encoding, got '%s'", prop.Media.BinaryEncoding)
+			}
 		}
 	}
 
