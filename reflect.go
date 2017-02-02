@@ -55,10 +55,10 @@ type Type struct {
 	Dependencies         map[string]*Type `json:"dependencies,omitempty"`         // section 5.19
 	Enum                 []interface{}    `json:"enum,omitempty"`                 // section 5.20
 	Type                 string           `json:"type,omitempty"`                 // section 5.21
-	AllOf                map[string]*Type `json:"allOf,omitempty"`                // section 5.22
-	AnyOf                map[string]*Type `json:"anyOf,omitempty"`                // section 5.23
-	OneOf                map[string]*Type `json:"oneOf,omitempty"`                // section 5.24
-	Not                  map[string]*Type `json:"not,omitempty"`                  // section 5.25
+	AllOf                []*Type          `json:"allOf,omitempty"`                // section 5.22
+	AnyOf                []*Type          `json:"anyOf,omitempty"`                // section 5.23
+	OneOf                []*Type          `json:"oneOf,omitempty"`                // section 5.24
+	Not                  *Type            `json:"not,omitempty"`                  // section 5.25
 	Definitions          Definitions      `json:"definitions,omitempty"`          // section 5.26
 	// RFC draft-wright-json-schema-validation-00, section 6, 7
 	Title       string      `json:"title,omitempty"`       // section 6.1
