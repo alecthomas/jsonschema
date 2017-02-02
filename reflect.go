@@ -101,10 +101,26 @@ var (
 // Byte slices will be encoded as base64
 var byteSliceType = reflect.TypeOf([]byte(nil))
 
+// Go code generated from protobuf enum types should fulfil this interface.
+type protoEnum interface {
+	EnumDescriptor() ([]byte, []int)
+}
+
+var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
+
 func reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
 	if _, ok := definitions[t.Name()]; ok {
 		return &Type{Ref: "#/definitions/" + t.Name()}
+	}
+
+	// jsonpb will marshal protobuf enum options as either strings or integers.
+	// It will unmarshal either.
+	if t.Implements(protoEnumType) {
+		return &Type{OneOf: []*Type{
+			&Type{Type: "string"},
+			&Type{Type: "integer"},
+		}}
 	}
 
 	// Defined format types for JSON Schema Validation
@@ -118,6 +134,7 @@ func reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 
 	switch t.Kind() {
 	case reflect.Struct:
+
 		switch t {
 		case timeType: // date-time RFC section 7.3.1
 			return &Type{Type: "string", Format: "date-time"}

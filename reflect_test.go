@@ -26,6 +26,15 @@ type nonExported struct {
 	privateNonExported int
 }
 
+type ProtoEnum int32
+
+func (ProtoEnum) EnumDescriptor() ([]byte, []int) { return []byte(nil), []int{0} }
+
+const (
+	Unset ProtoEnum = iota
+	Great
+)
+
 type TestUser struct {
 	SomeBaseType
 	nonExported
@@ -45,6 +54,9 @@ type TestUser struct {
 
 	// Tests for RFC draft-wright-json-schema-hyperschema-00, section 4
 	Photo []byte `json:"photo,omitempty"`
+
+	// Tests for jsonpb enum support
+	Feeling ProtoEnum `json:"feeling,omitempty"`
 }
 
 // TestSchemaGeneration checks if schema generated correctly:
@@ -67,6 +79,7 @@ func TestSchemaGeneration(t *testing.T) {
 		"website":                  "string",
 		"network_address":          "string",
 		"photo":                    "string",
+		"feeling":                  "",
 	}
 
 	props := s.Definitions["TestUser"].Properties
@@ -91,6 +104,16 @@ func TestSchemaGeneration(t *testing.T) {
 			// naively assumes byte slices will encode to base64 strings.
 			if prop.Media.BinaryEncoding != "base64" {
 				t.Fatalf("expected 'base64' binary encoding, got '%s'", prop.Media.BinaryEncoding)
+			}
+		}
+
+		if defKey == "feeling" {
+			if prop.OneOf == nil {
+				t.Fatal("expected 'oneOf' for 'feeling', got nil")
+			}
+
+			if prop.OneOf[0].Type != "string" || prop.OneOf[1].Type != "integer" {
+				t.Fatalf("expected oneOf 'string' or 'integer', got %+v %+v", prop.OneOf[0], prop.OneOf[1])
 			}
 		}
 	}
