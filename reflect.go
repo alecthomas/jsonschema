@@ -75,11 +75,27 @@ func Reflect(v interface{}) *Schema {
 	return ReflectFromType(reflect.TypeOf(v))
 }
 
-// ReflectFromType generates root schema
+// ReflectFromType generates root schema using the default Reflector
 func ReflectFromType(t reflect.Type) *Schema {
+	r := &Reflector{}
+	return r.ReflectFromType(t)
+}
+
+// A Reflector reflects values nto generate a Schema.
+type Reflector struct {
+	// AllowAdditionalProperties will cause the Reflector to generate a schema
+	// with additionalProperties to 'true' for all struct types. This means
+	// the presence of additional keys in JSON objects will not cause validation
+	// to fail. Note said additional keys will simply be dropped when the
+	// validated JSON is unmarshaled.
+	AllowAdditionalProperties bool
+}
+
+// ReflectFromType generates root schema
+func (r *Reflector) ReflectFromType(t reflect.Type) *Schema {
 	definitions := Definitions{}
 	s := &Schema{
-		Type:        reflectTypeToSchema(definitions, t),
+		Type:        r.reflectTypeToSchema(definitions, t),
 		Definitions: definitions,
 	}
 	return s
@@ -108,7 +124,7 @@ type protoEnum interface {
 
 var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 
-func reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
+func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
 	if _, ok := definitions[t.Name()]; ok {
 		return &Type{Ref: "#/definitions/" + t.Name()}
@@ -141,14 +157,14 @@ func reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 		case uriType: // uri RFC section 7.3.6
 			return &Type{Type: "string", Format: "uri"}
 		default:
-			return reflectStruct(definitions, t)
+			return r.reflectStruct(definitions, t)
 		}
 
 	case reflect.Map:
 		rt := &Type{
 			Type: "object",
 			PatternProperties: map[string]*Type{
-				".*": reflectTypeToSchema(definitions, t.Elem()),
+				".*": r.reflectTypeToSchema(definitions, t.Elem()),
 			},
 		}
 		delete(rt.PatternProperties, "additionalProperties")
@@ -164,7 +180,7 @@ func reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 		default:
 			return &Type{
 				Type:  "array",
-				Items: reflectTypeToSchema(definitions, t.Elem()),
+				Items: r.reflectTypeToSchema(definitions, t.Elem()),
 			}
 		}
 
@@ -188,20 +204,23 @@ func reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 		return &Type{Type: "string"}
 
 	case reflect.Ptr:
-		return reflectTypeToSchema(definitions, t.Elem())
+		return r.reflectTypeToSchema(definitions, t.Elem())
 	}
 	panic("unsupported type " + t.String())
 }
 
 // Refects a struct to a JSON Schema type.
-func reflectStruct(definitions Definitions, t reflect.Type) *Type {
+func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type {
 	st := &Type{
 		Type:                 "object",
 		Properties:           map[string]*Type{},
 		AdditionalProperties: []byte("false"),
 	}
+	if r.AllowAdditionalProperties {
+		st.AdditionalProperties = []byte("true")
+	}
 	definitions[t.Name()] = st
-	reflectStructFields(st, definitions, t)
+	r.reflectStructFields(st, definitions, t)
 
 	return &Type{
 		Version: Version,
@@ -209,7 +228,7 @@ func reflectStruct(definitions Definitions, t reflect.Type) *Type {
 	}
 }
 
-func reflectStructFields(st *Type, definitions Definitions, t reflect.Type) {
+func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t reflect.Type) {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
@@ -218,7 +237,7 @@ func reflectStructFields(st *Type, definitions Definitions, t reflect.Type) {
 		// anonymous and exported type should be processed recursively
 		// current type should inherit properties of anonymous one
 		if f.Anonymous && f.PkgPath == "" {
-			reflectStructFields(st, definitions, f.Type)
+			r.reflectStructFields(st, definitions, f.Type)
 			continue
 		}
 
@@ -226,7 +245,7 @@ func reflectStructFields(st *Type, definitions Definitions, t reflect.Type) {
 		if name == "" {
 			continue
 		}
-		st.Properties[name] = reflectTypeToSchema(definitions, f.Type)
+		st.Properties[name] = r.reflectTypeToSchema(definitions, f.Type)
 		if required {
 			st.Required = append(st.Required, name)
 		}
