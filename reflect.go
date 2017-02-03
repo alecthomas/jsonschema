@@ -70,7 +70,7 @@ type Type struct {
 	BinaryEncoding string `json:"binaryEncoding,omitempty"` // section 4.3
 }
 
-// Reflect reflects to Schema from a value.
+// Reflect reflects to Schema from a value using the default Reflector
 func Reflect(v interface{}) *Schema {
 	return ReflectFromType(reflect.TypeOf(v))
 }
@@ -89,6 +89,11 @@ type Reflector struct {
 	// to fail. Note said additional keys will simply be dropped when the
 	// validated JSON is unmarshaled.
 	AllowAdditionalProperties bool
+}
+
+// Reflect reflects to Schema from a value.
+func (r *Reflector) Reflect(v interface{}) *Schema {
+	return r.ReflectFromType(reflect.TypeOf(v))
 }
 
 // ReflectFromType generates root schema
