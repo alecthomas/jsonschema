@@ -89,6 +89,11 @@ type Reflector struct {
 	// to fail. Note said additional keys will simply be dropped when the
 	// validated JSON is unmarshaled.
 	AllowAdditionalProperties bool
+
+	// RequiredFromJSONSchemaTags will cause the Reflector to generate a schema
+	// that requires any key tagged with `jsonschema:required`, overriding the
+	// default of requiring any key *not* tagged with `json:,omitempty`.
+	RequiredFromJSONSchemaTags bool
 }
 
 // Reflect reflects to Schema from a value.
@@ -246,7 +251,7 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 			continue
 		}
 
-		name, required := reflectFieldName(f)
+		name, required := r.reflectFieldName(f)
 		if name == "" {
 			continue
 		}
@@ -257,24 +262,50 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 	}
 }
 
-func reflectFieldName(f reflect.StructField) (string, bool) {
+func requiredFromJSONTags(tags []string) bool {
+	if tags[0] == "-" {
+		return false
+	}
+
+	for _, tag := range tags[1:] {
+		if tag == "omitempty" {
+			return false
+		}
+	}
+	return true
+}
+
+func requiredFromJSONSchemaTags(tags []string) bool {
+	for _, tag := range tags {
+		if tag == "required" {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 	if f.PkgPath != "" { // unexported field, ignore it
 		return "", false
 	}
-	parts := strings.Split(f.Tag.Get("json"), ",")
-	if parts[0] == "-" {
+
+	jsonTags := strings.Split(f.Tag.Get("json"), ",")
+
+	if jsonTags[0] == "-" {
 		return "", false
 	}
 
 	name := f.Name
-	required := true
+	required := requiredFromJSONTags(jsonTags)
 
-	if parts[0] != "" {
-		name = parts[0]
+	if r.RequiredFromJSONSchemaTags {
+		jsonSchemaTags := strings.Split(f.Tag.Get("jsonschema"), ",")
+		required = requiredFromJSONSchemaTags(jsonSchemaTags)
 	}
 
-	if len(parts) > 1 && parts[1] == "omitempty" {
-		required = false
+	if jsonTags[0] != "" {
+		name = jsonTags[0]
 	}
+
 	return name, required
 }
