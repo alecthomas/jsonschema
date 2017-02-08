@@ -1,23 +1,29 @@
 package jsonschema
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net"
 	"net/url"
+	"reflect"
 	"testing"
 	"time"
 )
 
 type GrandfatherType struct {
-	FamilyName string `json:"family_name"`
+	FamilyName string `json:"family_name" jsonschema:"required"`
 }
 
 type SomeBaseType struct {
-	SomeBaseProperty        int             `json:"some_base_property"`
-	somePrivateBaseProperty string          `json:"i_am_private"`
-	SomeIgnoredBaseProperty string          `json:"-"`
+	SomeBaseProperty int `json:"some_base_property"`
+	// The jsonschema required tag is nonsensical for private and ignored properties.
+	// Their presence here tests that the fields *will not* be required in the output
+	// schema, even if they are tagged required.
+	somePrivateBaseProperty string          `json:"i_am_private" jsonschema:"required"`
+	SomeIgnoredBaseProperty string          `json:"-" jsonschema:"required"`
 	Grandfather             GrandfatherType `json:"grand"`
 
-	SomeUntaggedBaseProperty           bool
+	SomeUntaggedBaseProperty           bool `jsonschema:"required"`
 	someUnexportedUntaggedBaseProperty bool
 }
 
@@ -39,8 +45,8 @@ type TestUser struct {
 	SomeBaseType
 	nonExported
 
-	ID      int                    `json:"id"`
-	Name    string                 `json:"name"`
+	ID      int                    `json:"id" jsonschema:"required"`
+	Name    string                 `json:"name" jsonschema:"required"`
 	Friends []int                  `json:"friends,omitempty"`
 	Tags    map[string]interface{} `json:"tags,omitempty"`
 
@@ -53,74 +59,45 @@ type TestUser struct {
 	IPAddress net.IP    `json:"network_address,omitempty"`
 
 	// Tests for RFC draft-wright-json-schema-hyperschema-00, section 4
-	Photo []byte `json:"photo,omitempty"`
+	Photo []byte `json:"photo,omitempty" jsonschema:"required"`
 
 	// Tests for jsonpb enum support
 	Feeling ProtoEnum `json:"feeling,omitempty"`
 }
 
-// TestSchemaGeneration checks if schema generated correctly:
-// - fields marked with "-" are ignored
-// - non-exported fields are ignored
-// - anonymous fields are expanded
+var schemaGenerationTests = []struct {
+	reflector *Reflector
+	fixture   string
+}{
+	{&Reflector{}, "fixtures/defaults.json"},
+	{&Reflector{AllowAdditionalProperties: true}, "fixtures/allow_additional_props.json"},
+	{&Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/required_from_jsontags.json"},
+}
+
 func TestSchemaGeneration(t *testing.T) {
-	s := Reflect(&TestUser{})
+	for _, tt := range schemaGenerationTests {
 
-	expectedProperties := map[string]string{
-		"id":                       "integer",
-		"name":                     "string",
-		"friends":                  "array",
-		"tags":                     "object",
-		"birth_date":               "string",
-		"TestFlag":                 "boolean",
-		"some_base_property":       "integer",
-		"grand":                    "#/definitions/GrandfatherType",
-		"SomeUntaggedBaseProperty": "boolean",
-		"website":                  "string",
-		"network_address":          "string",
-		"photo":                    "string",
-		"feeling":                  "",
-	}
-
-	props := s.Definitions["TestUser"].Properties
-	for defKey, prop := range props {
-		typeOrRef, ok := expectedProperties[defKey]
-		if !ok {
-			t.Fatalf("unexpected property '%s'", defKey)
-		}
-		if prop.Type != "" && prop.Type != typeOrRef {
-			t.Fatalf("expected property type '%s', got '%s' for property '%s'", typeOrRef, prop.Type, defKey)
-		} else if prop.Ref != "" && prop.Ref != typeOrRef {
-			t.Fatalf("expected reference to '%s', got '%s' for property '%s'", typeOrRef, prop.Ref, defKey)
+		f, err := ioutil.ReadFile(tt.fixture)
+		if err != nil {
+			t.Errorf("ioutil.ReadAll(%s): %s", tt.fixture, err)
+			continue
 		}
 
-		if prop.Media != nil {
-			if prop.Type != "string" {
-				t.Fatalf("expected property type 'string' due to existence of 'media' property, got '%s'", prop.Type)
-			}
+		actualSchema := tt.reflector.Reflect(&TestUser{})
+		expectedSchema := &Schema{}
 
-			// Technically this is case insensitive and could be a handful of
-			// other encoding types per RFC 2046 section 6.1, but this code
-			// naively assumes byte slices will encode to base64 strings.
-			if prop.Media.BinaryEncoding != "base64" {
-				t.Fatalf("expected 'base64' binary encoding, got '%s'", prop.Media.BinaryEncoding)
-			}
+		if err := json.Unmarshal(f, expectedSchema); err != nil {
+			t.Errorf("json.Unmarshal(%s, %v): %s", tt.fixture, expectedSchema, err)
+			continue
 		}
 
-		if defKey == "feeling" {
-			if prop.OneOf == nil {
-				t.Fatal("expected 'oneOf' for 'feeling', got nil")
+		if !reflect.DeepEqual(actualSchema, expectedSchema) {
+			actualJSON, err := json.MarshalIndent(actualSchema, "", "  ")
+			if err != nil {
+				t.Errorf("json.MarshalIndent(%v, \"\", \"  \"): %v", actualSchema, err)
+				continue
 			}
-
-			if prop.OneOf[0].Type != "string" || prop.OneOf[1].Type != "integer" {
-				t.Fatalf("expected oneOf 'string' or 'integer', got %+v %+v", prop.OneOf[0], prop.OneOf[1])
-			}
-		}
-	}
-
-	for defKey := range expectedProperties {
-		if _, ok := props[defKey]; !ok {
-			t.Fatalf("expected property missing '%s'", defKey)
+			t.Errorf("reflector %+v wanted schema %s, got %s", tt.reflector, f, actualJSON)
 		}
 	}
 }
