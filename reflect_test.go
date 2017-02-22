@@ -72,6 +72,7 @@ var schemaGenerationTests = []struct {
 	{&Reflector{}, "fixtures/defaults.json"},
 	{&Reflector{AllowAdditionalProperties: true}, "fixtures/allow_additional_props.json"},
 	{&Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/required_from_jsontags.json"},
+	{&Reflector{ExpandedStruct: true}, "fixtures/defaults_expanded_toplevel.json"},
 }
 
 func TestSchemaGeneration(t *testing.T) {
@@ -99,28 +100,5 @@ func TestSchemaGeneration(t *testing.T) {
 			}
 			t.Errorf("reflector %+v wanted schema %s, got %s", tt.reflector, f, actualJSON)
 		}
-	}
-}
-
-// The reflect here returns a *Type instance
-func TestExpandedStruct(t *testing.T) {
-	r := &Reflector{ExpandedStruct: true}
-	fixture := "fixtures/defaults_expanded_toplevel.json"
-	f, err := ioutil.ReadFile(fixture)
-	if err != nil {
-		t.Errorf("ioutil.ReadAll(%s): %s", fixture, err)
-	}
-	actualSchema := r.Reflect(&TestUser{})
-	expectedSchema := &Type{}
-	if err := json.Unmarshal(f, expectedSchema); err != nil {
-		t.Errorf("json.Unmarshal(%s, %v): %s", fixture, expectedSchema, err)
-	}
-
-	if !reflect.DeepEqual(actualSchema, expectedSchema) {
-		actualJSON, err := json.MarshalIndent(actualSchema, "", "  ")
-		if err != nil {
-			t.Errorf("json.MarshalIndent(%v, \"\", \"  \"): %v", actualSchema, err)
-		}
-		t.Errorf("reflector %+v wanted schema %s, got %s", r, f, actualJSON)
 	}
 }

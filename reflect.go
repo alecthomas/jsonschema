@@ -71,12 +71,12 @@ type Type struct {
 }
 
 // Reflect reflects to Schema from a value using the default Reflector
-func Reflect(v interface{}) interface{} {
+func Reflect(v interface{}) *Schema {
 	return ReflectFromType(reflect.TypeOf(v))
 }
 
 // ReflectFromType generates root schema using the default Reflector
-func ReflectFromType(t reflect.Type) interface{} {
+func ReflectFromType(t reflect.Type) *Schema {
 	r := &Reflector{}
 	return r.ReflectFromType(t)
 }
@@ -101,12 +101,12 @@ type Reflector struct {
 }
 
 // Reflect reflects to Schema from a value.
-func (r *Reflector) Reflect(v interface{}) interface{} {
+func (r *Reflector) Reflect(v interface{}) *Schema {
 	return r.ReflectFromType(reflect.TypeOf(v))
 }
 
 // ReflectFromType generates root schema
-func (r *Reflector) ReflectFromType(t reflect.Type) interface{} {
+func (r *Reflector) ReflectFromType(t reflect.Type) *Schema {
 	definitions := Definitions{}
 	if r.ExpandedStruct {
 		st := &Type{
@@ -114,7 +114,6 @@ func (r *Reflector) ReflectFromType(t reflect.Type) interface{} {
 			Type:                 "object",
 			Properties:           map[string]*Type{},
 			AdditionalProperties: []byte("false"),
-			Definitions:          definitions,
 		}
 		if r.AllowAdditionalProperties {
 			st.AdditionalProperties = []byte("true")
@@ -122,7 +121,7 @@ func (r *Reflector) ReflectFromType(t reflect.Type) interface{} {
 		r.reflectStructFields(st, definitions, t)
 		r.reflectStruct(definitions, t)
 		delete(definitions, t.Name())
-		return st
+		return &Schema{Type: st, Definitions: definitions}
 	}
 
 	s := &Schema{
