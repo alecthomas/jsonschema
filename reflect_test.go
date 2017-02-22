@@ -5,7 +5,9 @@ import (
 	"io/ioutil"
 	"net"
 	"net/url"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -77,28 +79,30 @@ var schemaGenerationTests = []struct {
 
 func TestSchemaGeneration(t *testing.T) {
 	for _, tt := range schemaGenerationTests {
-
-		f, err := ioutil.ReadFile(tt.fixture)
-		if err != nil {
-			t.Errorf("ioutil.ReadAll(%s): %s", tt.fixture, err)
-			continue
-		}
-
-		actualSchema := tt.reflector.Reflect(&TestUser{})
-		expectedSchema := &Schema{}
-
-		if err := json.Unmarshal(f, expectedSchema); err != nil {
-			t.Errorf("json.Unmarshal(%s, %v): %s", tt.fixture, expectedSchema, err)
-			continue
-		}
-
-		if !reflect.DeepEqual(actualSchema, expectedSchema) {
-			actualJSON, err := json.MarshalIndent(actualSchema, "", "  ")
+		name := strings.TrimSuffix(filepath.Base(tt.fixture), ".json")
+		t.Run(name, func(t *testing.T) {
+			f, err := ioutil.ReadFile(tt.fixture)
 			if err != nil {
-				t.Errorf("json.MarshalIndent(%v, \"\", \"  \"): %v", actualSchema, err)
-				continue
+				t.Errorf("ioutil.ReadAll(%s): %s", tt.fixture, err)
+				return
 			}
-			t.Errorf("reflector %+v wanted schema %s, got %s", tt.reflector, f, actualJSON)
-		}
+
+			actualSchema := tt.reflector.Reflect(&TestUser{})
+			expectedSchema := &Schema{}
+
+			if err := json.Unmarshal(f, expectedSchema); err != nil {
+				t.Errorf("json.Unmarshal(%s, %v): %s", tt.fixture, expectedSchema, err)
+				return
+			}
+
+			if !reflect.DeepEqual(actualSchema, expectedSchema) {
+				actualJSON, err := json.MarshalIndent(actualSchema, "", "  ")
+				if err != nil {
+					t.Errorf("json.MarshalIndent(%v, \"\", \"  \"): %v", actualSchema, err)
+					return
+				}
+				t.Errorf("reflector %+v wanted schema %s, got %s", tt.reflector, f, actualJSON)
+			}
+		})
 	}
 }
