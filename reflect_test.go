@@ -72,6 +72,7 @@ var schemaGenerationTests = []struct {
 	{&Reflector{}, "fixtures/defaults.json"},
 	{&Reflector{AllowAdditionalProperties: true}, "fixtures/allow_additional_props.json"},
 	{&Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/required_from_jsontags.json"},
+	{&Reflector{ExpandedStruct: true}, "fixtures/defaults_expanded_toplevel.json"},
 }
 
 func TestSchemaGeneration(t *testing.T) {

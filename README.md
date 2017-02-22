@@ -18,7 +18,11 @@ type TestUser struct {
 }
 ```
 
-Results in this JSON Schema:
+Results in following JSON Schema:
+
+```go
+jsonschema.Reflect(&TestUser{})
+```
 
 ```json
 {
@@ -58,5 +62,72 @@ Results in this JSON Schema:
       "required": ["id", "name"]
     }
   }
+}
+```
+## Configurable behaviour
+	The behaviour of the schema generator can be altered with parameters when a `jsonschema.Reflector`
+	instance is created.
+#### ExpandedStruct
+If set to ```true```, makes the top level struct not to reference itself in the definitions. But type passed should be a struct type.
+
+example:
+
+```go
+type GrandfatherType struct {
+	FamilyName string `json:"family_name" jsonschema:"required"`
+}
+
+type SomeBaseType struct {
+	SomeBaseProperty int `json:"some_base_property"`
+	// The jsonschema required tag is nonsensical for private and ignored properties.
+	// Their presence here tests that the fields *will not* be required in the output
+	// schema, even if they are tagged required.
+	somePrivateBaseProperty            string `json:"i_am_private" jsonschema:"required"`
+	SomeIgnoredBaseProperty            string `json:"-" jsonschema:"required"`
+	SomeUntaggedBaseProperty           bool   `jsonschema:"required"`
+	someUnexportedUntaggedBaseProperty bool
+	Grandfather                        GrandfatherType `json:"grand"`
+}
+
+
+```
+
+will output:
+
+```json
+{
+		"$schema": "http://json-schema.org/draft-04/schema#",
+		"required": [
+			"some_base_property",
+			"grand",
+			"SomeUntaggedBaseProperty"
+		],
+		"properties": {
+			"SomeUntaggedBaseProperty": {
+				"type": "boolean"
+			},
+			"grand": {
+				"$schema": "http://json-schema.org/draft-04/schema#",
+				"$ref": "#/definitions/GrandfatherType"
+			},
+			"some_base_property": {
+				"type": "integer"
+			}
+		},
+		"type": "object",
+		"definitions": {
+			"GrandfatherType": {
+				"required": [
+					"family_name"
+				],
+				"properties": {
+					"family_name": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			}
+		}
 }
 ```

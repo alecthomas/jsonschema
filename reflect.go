@@ -94,6 +94,10 @@ type Reflector struct {
 	// that requires any key tagged with `jsonschema:required`, overriding the
 	// default of requiring any key *not* tagged with `json:,omitempty`.
 	RequiredFromJSONSchemaTags bool
+
+	// ExpandedStruct will cause the toplevel definitions of the schema not
+	// be referenced itself to a definition.
+	ExpandedStruct bool
 }
 
 // Reflect reflects to Schema from a value.
@@ -104,6 +108,22 @@ func (r *Reflector) Reflect(v interface{}) *Schema {
 // ReflectFromType generates root schema
 func (r *Reflector) ReflectFromType(t reflect.Type) *Schema {
 	definitions := Definitions{}
+	if r.ExpandedStruct {
+		st := &Type{
+			Version:              Version,
+			Type:                 "object",
+			Properties:           map[string]*Type{},
+			AdditionalProperties: []byte("false"),
+		}
+		if r.AllowAdditionalProperties {
+			st.AdditionalProperties = []byte("true")
+		}
+		r.reflectStructFields(st, definitions, t)
+		r.reflectStruct(definitions, t)
+		delete(definitions, t.Name())
+		return &Schema{Type: st, Definitions: definitions}
+	}
+
 	s := &Schema{
 		Type:        r.reflectTypeToSchema(definitions, t),
 		Definitions: definitions,
