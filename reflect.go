@@ -81,7 +81,7 @@ func ReflectFromType(t reflect.Type) *Schema {
 	return r.ReflectFromType(t)
 }
 
-// A Reflector reflects values nto generate a Schema.
+// A Reflector reflects values into a Schema.
 type Reflector struct {
 	// AllowAdditionalProperties will cause the Reflector to generate a schema
 	// with additionalProperties to 'true' for all struct types. This means
@@ -136,7 +136,7 @@ func (r *Reflector) ReflectFromType(t reflect.Type) *Schema {
 // RFC draft-wright-json-schema-validation-00, section 5.26
 type Definitions map[string]*Type
 
-// Avaialble Go defined types for JSON Schema Validation.
+// Available Go defined types for JSON Schema Validation.
 // RFC draft-wright-json-schema-validation-00, section 7.3
 var (
 	timeType = reflect.TypeOf(time.Time{}) // date-time RFC section 7.3.1
@@ -164,8 +164,8 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 	// It will unmarshal either.
 	if t.Implements(protoEnumType) {
 		return &Type{OneOf: []*Type{
-			&Type{Type: "string"},
-			&Type{Type: "integer"},
+			{Type: "string"},
+			{Type: "integer"},
 		}}
 	}
 
