@@ -66,12 +66,15 @@ jsonschema.Reflect(&TestUser{})
 }
 ```
 ## Configurable behaviour
-	The behaviour of the schema generator can be altered with parameters when a `jsonschema.Reflector`
-	instance is created.
-#### ExpandedStruct
+
+The behaviour of the schema generator can be altered with parameters when a `jsonschema.Reflector`
+instance is created.
+
+### ExpandedStruct
+
 If set to ```true```, makes the top level struct not to reference itself in the definitions. But type passed should be a struct type.
 
-example:
+eg.
 
 ```go
 type GrandfatherType struct {
@@ -89,46 +92,44 @@ type SomeBaseType struct {
 	someUnexportedUntaggedBaseProperty bool
 	Grandfather                        GrandfatherType `json:"grand"`
 }
-
-
 ```
 
 will output:
 
 ```json
 {
-		"$schema": "http://json-schema.org/draft-04/schema#",
-		"required": [
-			"some_base_property",
-			"grand",
-			"SomeUntaggedBaseProperty"
-		],
-		"properties": {
-			"SomeUntaggedBaseProperty": {
-				"type": "boolean"
-			},
-			"grand": {
-				"$schema": "http://json-schema.org/draft-04/schema#",
-				"$ref": "#/definitions/GrandfatherType"
-			},
-			"some_base_property": {
-				"type": "integer"
-			}
-		},
-		"type": "object",
-		"definitions": {
-			"GrandfatherType": {
-				"required": [
-					"family_name"
-				],
-				"properties": {
-					"family_name": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			}
-		}
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "required": [
+    "some_base_property",
+    "grand",
+    "SomeUntaggedBaseProperty"
+  ],
+  "properties": {
+    "SomeUntaggedBaseProperty": {
+      "type": "boolean"
+    },
+    "grand": {
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "$ref": "#/definitions/GrandfatherType"
+    },
+    "some_base_property": {
+      "type": "integer"
+    }
+  },
+  "type": "object",
+  "definitions": {
+    "GrandfatherType": {
+      "required": [
+        "family_name"
+      ],
+      "properties": {
+        "family_name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
 }
 ```
