@@ -13,6 +13,7 @@ import (
 	"reflect"
 	"strings"
 	"time"
+	"strconv"
 )
 
 // Version is the JSON Schema version.
@@ -252,6 +253,7 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 	definitions[t.Name()] = st
 	r.reflectStructFields(st, definitions, t)
 
+
 	return &Type{
 		Version: Version,
 		Ref:     "#/definitions/" + t.Name(),
@@ -275,11 +277,127 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 		if name == "" {
 			continue
 		}
-		st.Properties[name] = r.reflectTypeToSchema(definitions, f.Type)
+		property := r.reflectTypeToSchema(definitions, f.Type)
+		property.structKeywordsFromTags(f)
+		st.Properties[name] = property
 		if required {
 			st.Required = append(st.Required, name)
 		}
 	}
+}
+
+func (t *Type) structKeywordsFromTags(f reflect.StructField){
+	tags := strings.Split(f.Tag.Get("jsonschema"), ",")
+	switch t.Type{
+	case "string":
+		t.stringKeywords(tags)
+	case "number":
+		t.numbericKeywords(tags)
+	case "integer":
+		t.numbericKeywords(tags)
+	case "array":
+		t.arrayKeywords(tags)
+	}
+}
+
+// read struct tags for string type keyworks
+func (t *Type) stringKeywords(tags []string) {
+    for _, tag := range tags{
+        nameValue := strings.Split(tag, "=")
+        if len(nameValue) == 2{
+	        name, val := nameValue[0], nameValue[1]
+	        switch name{
+	            case "minLength":
+	            	i, _ := strconv.Atoi(val)
+	                t.MinLength = i
+	                break;
+	            case "maxLength":
+	            	i, _ := strconv.Atoi(val)
+	                t.MinLength = i
+	                break;
+	            case "pattern":
+	                t.Pattern = val
+	                break;
+	            case "format":
+	                switch val{
+	                case "date-time", "email", "hostname", "ipv4", "ipv6", "uri":
+	                    t.Format = val
+	                    break
+	                }
+	                break;
+	        }
+    	}
+    }
+}
+
+// read struct tags for numberic type keyworks
+func (t *Type) numbericKeywords(tags []string) {
+    for _, tag := range tags{
+        nameValue := strings.Split(tag, "=")
+        if len(nameValue) == 2{
+        	name, val := nameValue[0], nameValue[1]
+	        switch name{
+	            case "multipleOf":
+	            	i, _ := strconv.Atoi(val)
+	                t.MultipleOf = i
+	                break;
+	            case "minimum":
+	            	i, _ := strconv.Atoi(val)
+	                t.Minimum = i
+	                break;
+	            case "maximum":
+	            	i, _ := strconv.Atoi(val)
+	                t.Maximum = i
+	                break;
+	            case "exclusiveMaximum":
+	            	b, _ := strconv.ParseBool(val)
+	                t.ExclusiveMaximum = b
+	                break;
+	            case "exclusiveMinimum":
+	            	b, _ := strconv.ParseBool(val)
+	                t.ExclusiveMinimum = b
+	                break;
+	        }
+        }
+    }
+}
+
+// read struct tags for object type keyworks
+// func (t *Type) objectKeywords(tags []string) {
+//     for _, tag := range tags{
+//         nameValue := strings.Split(tag, "=")
+//         name, val := nameValue[0], nameValue[1]
+//         switch name{
+//             case "dependencies":
+//                 t.Dependencies = val
+//                 break;
+//             case "patternProperties":
+//                 t.PatternProperties = val
+//                 break;
+//         }
+//     }
+// }
+
+// read struct tags for array type keyworks
+func (t *Type) arrayKeywords(tags []string) {
+    for _, tag := range tags{
+        nameValue := strings.Split(tag, "=")
+        if len(nameValue) == 2{
+	        name, val := nameValue[0], nameValue[1]
+	        switch name{
+	            case "minItems":
+	            	i, _ := strconv.Atoi(val)
+	                t.MinItems = i
+	                break;
+	            case "maxItems":
+	            	i, _ := strconv.Atoi(val)
+	                t.MaxItems = i
+	                break;
+	            case "UniqueItems":
+	                break;
+	        }
+    	}
+    }
 }
 
 func requiredFromJSONTags(tags []string) bool {
