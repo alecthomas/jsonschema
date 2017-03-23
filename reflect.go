@@ -393,7 +393,8 @@ func (t *Type) arrayKeywords(tags []string) {
 	            	i, _ := strconv.Atoi(val)
 	                t.MaxItems = i
 	                break;
-	            case "UniqueItems":
+	            case "uniqueItems":
+	            	t.UniqueItems = true
 	                break;
 	        }
     	}
