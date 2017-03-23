@@ -4,7 +4,7 @@
 This package can be used to generate [JSON Schemas](http://json-schema.org/latest/json-schema-validation.html) from Go types through reflection.
 
 It supports arbitrarily complex types, including `interface{}`, maps, slices, etc.
-And it also supports json-schema such as minLength, maxLength, pattern, format and etc.
+And it also supports json-schema features such as minLength, maxLength, pattern, format and etc.
 ## Example
 
 The following Go type:
