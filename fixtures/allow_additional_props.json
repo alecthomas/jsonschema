@@ -21,7 +21,9 @@
         "SomeUntaggedBaseProperty",
         "id",
         "name",
-        "TestFlag"
+        "TestFlag",
+        "age",
+        "email"
       ],
       "properties": {
         "SomeUntaggedBaseProperty": {
@@ -29,6 +31,17 @@
         },
         "TestFlag": {
           "type": "boolean"
+        },
+        "age":{
+          "maximum": 120,
+          "minimum": 18,
+          "exclusiveMaximum": true,
+          "exclusiveMinimum": true,
+          "type": "integer"
+        },  
+        "email": {
+          "type": "string",
+          "format": "email"
         },
         "birth_date": {
           "type": "string",
@@ -58,7 +71,9 @@
           "type": "integer"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 20,
+          "minLength": 1
         },
         "network_address": {
           "type": "string",

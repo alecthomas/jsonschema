@@ -310,21 +310,15 @@ func (t *Type) stringKeywords(tags []string) {
 	            case "minLength":
 	            	i, _ := strconv.Atoi(val)
 	                t.MinLength = i
-	                break;
 	            case "maxLength":
 	            	i, _ := strconv.Atoi(val)
-	                t.MinLength = i
-	                break;
-	            case "pattern":
-	                t.Pattern = val
-	                break;
+	                t.MaxLength = i
 	            case "format":
 	                switch val{
 	                case "date-time", "email", "hostname", "ipv4", "ipv6", "uri":
 	                    t.Format = val
 	                    break
 	                }
-	                break;
 	        }
     	}
     }
@@ -340,23 +334,18 @@ func (t *Type) numbericKeywords(tags []string) {
 	            case "multipleOf":
 	            	i, _ := strconv.Atoi(val)
 	                t.MultipleOf = i
-	                break;
 	            case "minimum":
 	            	i, _ := strconv.Atoi(val)
 	                t.Minimum = i
-	                break;
 	            case "maximum":
 	            	i, _ := strconv.Atoi(val)
 	                t.Maximum = i
-	                break;
 	            case "exclusiveMaximum":
 	            	b, _ := strconv.ParseBool(val)
 	                t.ExclusiveMaximum = b
-	                break;
 	            case "exclusiveMinimum":
 	            	b, _ := strconv.ParseBool(val)
 	                t.ExclusiveMinimum = b
-	                break;
 	        }
         }
     }
@@ -388,14 +377,11 @@ func (t *Type) arrayKeywords(tags []string) {
 	            case "minItems":
 	            	i, _ := strconv.Atoi(val)
 	                t.MinItems = i
-	                break;
 	            case "maxItems":
 	            	i, _ := strconv.Atoi(val)
 	                t.MaxItems = i
-	                break;
 	            case "uniqueItems":
 	            	t.UniqueItems = true
-	                break;
 	        }
     	}
     }
