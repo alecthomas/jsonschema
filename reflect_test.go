@@ -21,9 +21,10 @@ type SomeBaseType struct {
 	// The jsonschema required tag is nonsensical for private and ignored properties.
 	// Their presence here tests that the fields *will not* be required in the output
 	// schema, even if they are tagged required.
-	somePrivateBaseProperty string          `json:"i_am_private" jsonschema:"required"`
-	SomeIgnoredBaseProperty string          `json:"-" jsonschema:"required"`
-	Grandfather             GrandfatherType `json:"grand"`
+	somePrivateBaseProperty   string          `json:"i_am_private" jsonschema:"required"`
+	SomeIgnoredBaseProperty   string          `json:"-" jsonschema:"required"`
+	SomeSchemaIgnoredProperty string          `jsonschema:"-,required"`
+	Grandfather               GrandfatherType `json:"grand"`
 
 	SomeUntaggedBaseProperty           bool `jsonschema:"required"`
 	someUnexportedUntaggedBaseProperty bool
