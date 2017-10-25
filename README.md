@@ -88,6 +88,7 @@ type SomeBaseType struct {
 	// schema, even if they are tagged required.
 	somePrivateBaseProperty            string `json:"i_am_private" jsonschema:"required"`
 	SomeIgnoredBaseProperty            string `json:"-" jsonschema:"required"`
+	SomeSchemaIgnoredProperty          string `jsonschema:"-,required"`
 	SomeUntaggedBaseProperty           bool   `jsonschema:"required"`
 	someUnexportedUntaggedBaseProperty bool
 	Grandfather                        GrandfatherType `json:"grand"`

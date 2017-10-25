@@ -283,7 +283,7 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 }
 
 func requiredFromJSONTags(tags []string) bool {
-	if tags[0] == "-" {
+	if ignoredByJSONTags(tags) {
 		return false
 	}
 
@@ -296,12 +296,23 @@ func requiredFromJSONTags(tags []string) bool {
 }
 
 func requiredFromJSONSchemaTags(tags []string) bool {
+	if ignoredByJSONSchemaTags(tags) {
+		return false
+	}
 	for _, tag := range tags {
 		if tag == "required" {
 			return true
 		}
 	}
 	return false
+}
+
+func ignoredByJSONTags(tags []string) bool {
+	return tags[0] == "-"
+}
+
+func ignoredByJSONSchemaTags(tags []string) bool {
+	return tags[0] == "-"
 }
 
 func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
@@ -311,7 +322,12 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 
 	jsonTags := strings.Split(f.Tag.Get("json"), ",")
 
-	if jsonTags[0] == "-" {
+	if ignoredByJSONTags(jsonTags) {
+		return "", false
+	}
+
+	jsonSchemaTags := strings.Split(f.Tag.Get("jsonschema"), ",")
+	if ignoredByJSONSchemaTags(jsonSchemaTags) {
 		return "", false
 	}
 
@@ -319,7 +335,6 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 	required := requiredFromJSONTags(jsonTags)
 
 	if r.RequiredFromJSONSchemaTags {
-		jsonSchemaTags := strings.Split(f.Tag.Get("jsonschema"), ",")
 		required = requiredFromJSONSchemaTags(jsonSchemaTags)
 	}
 
