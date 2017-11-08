@@ -49,7 +49,7 @@ type TestUser struct {
 	nonExported
 
 	ID      int                    `json:"id" jsonschema:"required"`
-	Name    string                 `json:"name" jsonschema:"required"`
+	Name    string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20"`
 	Friends []int                  `json:"friends,omitempty"`
 	Tags    map[string]interface{} `json:"tags,omitempty"`
 
@@ -66,6 +66,8 @@ type TestUser struct {
 
 	// Tests for jsonpb enum support
 	Feeling ProtoEnum `json:"feeling,omitempty"`
+	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true"`
+	Email   string    `json:"email" jsonschema:"format=email"`
 }
 
 var schemaGenerationTests = []struct {

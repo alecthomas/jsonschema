@@ -1,10 +1,14 @@
 # Go JSON Schema Reflection
-[![Build Status](https://travis-ci.org/alecthomas/jsonschema.png)](https://travis-ci.org/alecthomas/jsonschema) [![Gitter chat](https://badges.gitter.im/alecthomas.png)](https://gitter.im/alecthomas/Lobby) [![Go Report Card](https://goreportcard.com/badge/github.com/alecthomas/jsonschema)](https://goreportcard.com/report/github.com/alecthomas/jsonschema)
+
+[![Build Status](https://travis-ci.org/alecthomas/jsonschema.png)](https://travis-ci.org/alecthomas/jsonschema)
+[![Gitter chat](https://badges.gitter.im/alecthomas.png)](https://gitter.im/alecthomas/Lobby)
+[![Go Report Card](https://goreportcard.com/badge/github.com/alecthomas/jsonschema)](https://goreportcard.com/report/github.com/alecthomas/jsonschema)
+[![GoDoc](https://godoc.org/github.com/alecthomas/jsonschema?status.svg)](https://godoc.org/github.com/alecthomas/jsonschema)
 
 This package can be used to generate [JSON Schemas](http://json-schema.org/latest/json-schema-validation.html) from Go types through reflection.
 
 It supports arbitrarily complex types, including `interface{}`, maps, slices, etc.
-
+And it also supports json-schema features such as minLength, maxLength, pattern, format and etc.
 ## Example
 
 The following Go type:
