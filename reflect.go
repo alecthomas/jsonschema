@@ -8,7 +8,6 @@ package jsonschema
 
 import (
 	"encoding/json"
-	"fmt"
 	"net"
 	"net/url"
 	"reflect"
