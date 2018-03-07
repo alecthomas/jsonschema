@@ -153,7 +153,12 @@ type protoEnum interface {
 	EnumDescriptor() ([]byte, []int)
 }
 
+type anyOf interface {
+	AnyOf() []reflect.StructField
+}
+
 var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
+var anyOfType = reflect.TypeOf((*anyOf)(nil)).Elem()
 
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
@@ -168,6 +173,19 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			{Type: "string"},
 			{Type: "integer"},
 		}}
+	}
+
+	// return anyOf realization for structures.
+	if t.Implements(anyOfType) {
+		anyList := make([]*Type, 0)
+		for _, anyType := range reflect.New(t).Interface().(anyOf).AnyOf() {
+			if anyType.Type == nil {
+				anyList = append(anyList, &Type{Type: "null"})
+			} else {
+				anyList = append(anyList, r.reflectTypeToSchema(definitions, anyType.Type))
+			}
+		}
+		return &Type{AnyOf: anyList}
 	}
 
 	// Defined format types for JSON Schema Validation
