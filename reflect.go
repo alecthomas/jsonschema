@@ -11,9 +11,9 @@ import (
 	"net"
 	"net/url"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
 )
 
 // Version is the JSON Schema version.
@@ -155,6 +155,12 @@ type protoEnum interface {
 
 var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 
+type anyOf interface {
+	AnyOf() []reflect.StructField
+}
+
+var anyOfType = reflect.TypeOf((*anyOf)(nil)).Elem()
+
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
 	if _, ok := definitions[t.Name()]; ok {
@@ -168,6 +174,19 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			{Type: "string"},
 			{Type: "integer"},
 		}}
+	}
+
+	// return anyOf realization for structures.
+	if t.Implements(anyOfType) {
+		anyList := make([]*Type, 0)
+		for _, anyType := range reflect.New(t).Interface().(anyOf).AnyOf() {
+			if anyType.Type == nil {
+				anyList = append(anyList, &Type{Type: "null"})
+			} else {
+				anyList = append(anyList, r.reflectTypeToSchema(definitions, anyType.Type))
+			}
+		}
+		return &Type{AnyOf: anyList}
 	}
 
 	// Defined format types for JSON Schema Validation
@@ -201,18 +220,21 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		delete(rt.PatternProperties, "additionalProperties")
 		return rt
 
-	case reflect.Slice:
+	case reflect.Slice, reflect.Array:
+		returnType := &Type{}
+		if t.Kind() == reflect.Array {
+			returnType.MinItems = t.Len()
+			returnType.MaxItems = returnType.MinItems
+		}
 		switch t {
 		case byteSliceType:
-			return &Type{
-				Type:  "string",
-				Media: &Type{BinaryEncoding: "base64"},
-			}
+			returnType.Type = "string"
+			returnType.Media = &Type{BinaryEncoding: "base64"}
+			return returnType
 		default:
-			return &Type{
-				Type:  "array",
-				Items: r.reflectTypeToSchema(definitions, t.Elem()),
-			}
+			returnType.Type = "array"
+			returnType.Items = r.reflectTypeToSchema(definitions, t.Elem())
+			return returnType
 		}
 
 	case reflect.Interface:
@@ -253,7 +275,6 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 	definitions[t.Name()] = st
 	r.reflectStructFields(st, definitions, t)
 
-
 	return &Type{
 		Version: Version,
 		Ref:     "#/definitions/" + t.Name(),
@@ -286,9 +307,9 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 	}
 }
 
-func (t *Type) structKeywordsFromTags(f reflect.StructField){
+func (t *Type) structKeywordsFromTags(f reflect.StructField) {
 	tags := strings.Split(f.Tag.Get("jsonschema"), ",")
-	switch t.Type{
+	switch t.Type {
 	case "string":
 		t.stringKeywords(tags)
 	case "number":
@@ -302,53 +323,53 @@ func (t *Type) structKeywordsFromTags(f reflect.StructField){
 
 // read struct tags for string type keyworks
 func (t *Type) stringKeywords(tags []string) {
-    for _, tag := range tags{
-        nameValue := strings.Split(tag, "=")
-        if len(nameValue) == 2{
-	        name, val := nameValue[0], nameValue[1]
-	        switch name{
-	            case "minLength":
-	            	i, _ := strconv.Atoi(val)
-	                t.MinLength = i
-	            case "maxLength":
-	            	i, _ := strconv.Atoi(val)
-	                t.MaxLength = i
-	            case "format":
-	                switch val{
-	                case "date-time", "email", "hostname", "ipv4", "ipv6", "uri":
-	                    t.Format = val
-	                    break
-	                }
-	        }
-    	}
-    }
+	for _, tag := range tags {
+		nameValue := strings.Split(tag, "=")
+		if len(nameValue) == 2 {
+			name, val := nameValue[0], nameValue[1]
+			switch name {
+			case "minLength":
+				i, _ := strconv.Atoi(val)
+				t.MinLength = i
+			case "maxLength":
+				i, _ := strconv.Atoi(val)
+				t.MaxLength = i
+			case "format":
+				switch val {
+				case "date-time", "email", "hostname", "ipv4", "ipv6", "uri":
+					t.Format = val
+					break
+				}
+			}
+		}
+	}
 }
 
 // read struct tags for numberic type keyworks
 func (t *Type) numbericKeywords(tags []string) {
-    for _, tag := range tags{
-        nameValue := strings.Split(tag, "=")
-        if len(nameValue) == 2{
-        	name, val := nameValue[0], nameValue[1]
-	        switch name{
-	            case "multipleOf":
-	            	i, _ := strconv.Atoi(val)
-	                t.MultipleOf = i
-	            case "minimum":
-	            	i, _ := strconv.Atoi(val)
-	                t.Minimum = i
-	            case "maximum":
-	            	i, _ := strconv.Atoi(val)
-	                t.Maximum = i
-	            case "exclusiveMaximum":
-	            	b, _ := strconv.ParseBool(val)
-	                t.ExclusiveMaximum = b
-	            case "exclusiveMinimum":
-	            	b, _ := strconv.ParseBool(val)
-	                t.ExclusiveMinimum = b
-	        }
-        }
-    }
+	for _, tag := range tags {
+		nameValue := strings.Split(tag, "=")
+		if len(nameValue) == 2 {
+			name, val := nameValue[0], nameValue[1]
+			switch name {
+			case "multipleOf":
+				i, _ := strconv.Atoi(val)
+				t.MultipleOf = i
+			case "minimum":
+				i, _ := strconv.Atoi(val)
+				t.Minimum = i
+			case "maximum":
+				i, _ := strconv.Atoi(val)
+				t.Maximum = i
+			case "exclusiveMaximum":
+				b, _ := strconv.ParseBool(val)
+				t.ExclusiveMaximum = b
+			case "exclusiveMinimum":
+				b, _ := strconv.ParseBool(val)
+				t.ExclusiveMinimum = b
+			}
+		}
+	}
 }
 
 // read struct tags for object type keyworks
@@ -369,22 +390,22 @@ func (t *Type) numbericKeywords(tags []string) {
 
 // read struct tags for array type keyworks
 func (t *Type) arrayKeywords(tags []string) {
-    for _, tag := range tags{
-        nameValue := strings.Split(tag, "=")
-        if len(nameValue) == 2{
-	        name, val := nameValue[0], nameValue[1]
-	        switch name{
-	            case "minItems":
-	            	i, _ := strconv.Atoi(val)
-	                t.MinItems = i
-	            case "maxItems":
-	            	i, _ := strconv.Atoi(val)
-	                t.MaxItems = i
-	            case "uniqueItems":
-	            	t.UniqueItems = true
-	        }
-    	}
-    }
+	for _, tag := range tags {
+		nameValue := strings.Split(tag, "=")
+		if len(nameValue) == 2 {
+			name, val := nameValue[0], nameValue[1]
+			switch name {
+			case "minItems":
+				i, _ := strconv.Atoi(val)
+				t.MinItems = i
+			case "maxItems":
+				i, _ := strconv.Atoi(val)
+				t.MaxItems = i
+			case "uniqueItems":
+				t.UniqueItems = true
+			}
+		}
+	}
 }
 
 func requiredFromJSONTags(tags []string) bool {
@@ -448,4 +469,12 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 	}
 
 	return name, required
+}
+
+func AnyOfFieldsIn(p reflect.Value) []reflect.StructField {
+	res := make([]reflect.StructField, 0)
+	for i := 0; i < p.NumField(); i++ {
+		res = append(res, p.Field(i))
+	}
+	return res
 }
