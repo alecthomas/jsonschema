@@ -153,11 +153,12 @@ type protoEnum interface {
 	EnumDescriptor() ([]byte, []int)
 }
 
+var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
+
 type anyOf interface {
 	AnyOf() []reflect.StructField
 }
 
-var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 var anyOfType = reflect.TypeOf((*anyOf)(nil)).Elem()
 
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
@@ -468,4 +469,12 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 	}
 
 	return name, required
+}
+
+func AnyOfFieldsIn(p reflect.Value) []reflect.StructField {
+	res := make([]reflect.StructField, 0)
+	for i := 0; i < p.NumField(); i++ {
+		res = append(res, p.Field(i))
+	}
+	return res
 }

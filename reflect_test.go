@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -108,4 +109,29 @@ func TestSchemaGeneration(t *testing.T) {
 			}
 		})
 	}
+}
+
+type Professional struct {
+	developer *Developer
+	qa        *QA
+}
+
+func (p Professional) AnyOf() []reflect.StructField {
+	return AnyOfFieldsIn(p)
+}
+
+type Developer struct {
+	profession string `jsonschema:"pattern:^software developer$"`
+	languages  []string
+}
+
+type QA struct {
+	profession string `jsonschema:"pattern:^QA$"`
+	automation bool
+}
+
+func TestAnyOf(t *testing.T) {
+	schema := Reflect(&Professional{})
+	data, err := json.MarshalIndent(schema, "", " ")
+	fmt.Println(string(data), err)
 }
