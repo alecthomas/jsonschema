@@ -8,6 +8,7 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/url"
 	"reflect"
@@ -169,6 +170,7 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			{Type: "integer"},
 		}}
 	}
+	fmt.Println(t.Name(), t.Kind().String())
 
 	// Defined format types for JSON Schema Validation
 	// RFC draft-wright-json-schema-validation-00, section 7.3
