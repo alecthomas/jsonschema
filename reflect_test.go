@@ -5,9 +5,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/url"
-	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 )
@@ -72,25 +70,45 @@ type TestUser struct {
 
 var schemaGenerationTests = []struct {
 	reflector *Reflector
+	structure interface{}
 	fixture   string
 }{
-	{&Reflector{}, "fixtures/defaults.json"},
-	{&Reflector{AllowAdditionalProperties: true}, "fixtures/allow_additional_props.json"},
-	{&Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/required_from_jsontags.json"},
-	{&Reflector{ExpandedStruct: true}, "fixtures/defaults_expanded_toplevel.json"},
+	{&Reflector{}, &TestUser{}, "defaults"},
+	{&Reflector{AllowAdditionalProperties: true}, &TestUser{}, "allow_additional_props"},
+	{&Reflector{RequiredFromJSONSchemaTags: true}, &TestUser{}, "required_from_jsontags"},
+	{&Reflector{ExpandedStruct: true}, &TestUser{}, "defaults_expanded_toplevel"},
+	{&Reflector{}, &Professional{}, "any_of"},
+}
+
+type Professional struct {
+	developer *Developer
+	qa        *QA
+}
+
+func (p Professional) AnyOf() []reflect.StructField {
+	return AnyOfFieldsIn(p, "developer", "qa")
+}
+
+type Developer struct {
+	Profession string `jsonschema:"pattern:^software developer$"`
+	Languages  []string
+}
+
+type QA struct {
+	Profession string `jsonschema:"pattern:^QA$"`
+	Automation bool
 }
 
 func TestSchemaGeneration(t *testing.T) {
 	for _, tt := range schemaGenerationTests {
-		name := strings.TrimSuffix(filepath.Base(tt.fixture), ".json")
-		t.Run(name, func(t *testing.T) {
-			f, err := ioutil.ReadFile(tt.fixture)
+		t.Run(tt.fixture, func(t *testing.T) {
+			f, err := ioutil.ReadFile("fixtures/" + tt.fixture + ".json")
 			if err != nil {
 				t.Errorf("ioutil.ReadAll(%s): %s", tt.fixture, err)
 				return
 			}
 
-			actualSchema := tt.reflector.Reflect(&TestUser{})
+			actualSchema := tt.reflector.Reflect(tt.structure)
 			expectedSchema := &Schema{}
 
 			if err := json.Unmarshal(f, expectedSchema); err != nil {

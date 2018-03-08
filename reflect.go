@@ -8,6 +8,7 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/url"
 	"reflect"
@@ -155,6 +156,12 @@ type protoEnum interface {
 
 var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 
+type anyOf interface {
+	AnyOf() []reflect.StructField
+}
+
+var anyOfType = reflect.TypeOf((*anyOf)(nil)).Elem()
+
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
 	if _, ok := definitions[t.Name()]; ok {
@@ -168,6 +175,20 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			{Type: "string"},
 			{Type: "integer"},
 		}}
+	}
+
+	// return anyOf subtypes for given type
+	if t.Implements(anyOfType) {
+		anyList := make([]*Type, 0)
+		iface := reflect.New(t).Interface()
+		for _, anyType := range iface.(anyOf).AnyOf() {
+			if anyType.Type == nil {
+				anyList = append(anyList, &Type{Type: "null"})
+			} else {
+				anyList = append(anyList, r.reflectTypeToSchema(definitions, anyType.Type))
+			}
+		}
+		return &Type{AnyOf: anyList}
 	}
 
 	// Defined format types for JSON Schema Validation
@@ -450,4 +471,17 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 	}
 
 	return name, required
+}
+
+func AnyOfFieldsIn(p interface{}, names ...string) []reflect.StructField {
+	t := reflect.TypeOf(p)
+	res := make([]reflect.StructField, 0)
+	for _, name := range names {
+		field, ok := t.FieldByName(name)
+		if !ok {
+			panic(fmt.Sprintf("No field named %s in struct %v", name, p))
+		}
+		res = append(res, field)
+	}
+	return res
 }
