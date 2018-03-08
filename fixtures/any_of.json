@@ -1,0 +1,49 @@
+{
+    "anyOf": [
+        {
+            "$ref": "#/definitions/Developer",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        {
+            "$ref": "#/definitions/QA",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+    ],
+    "definitions": {
+        "Developer": {
+            "additionalProperties": false,
+            "properties": {
+                "Languages": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "Profession": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "Profession",
+                "Languages"
+            ],
+            "type": "object"
+        },
+        "QA": {
+            "additionalProperties": false,
+            "properties": {
+                "Automation": {
+                    "type": "boolean"
+                },
+                "Profession": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "Profession",
+                "Automation"
+            ],
+            "type": "object"
+        }
+    }
+}
