@@ -49,9 +49,14 @@
     },
     "Hardware": {
       "required": [
+        "brand",
         "memory"
       ],
       "properties": {
+        "brand": {
+          "pattern": "^\\S",
+          "type": "string"
+        },
         "memory": {
           "type": "integer"
         }
@@ -60,7 +65,6 @@
       "type": "object",
       "oneOf": [
         {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/Laptop"
         },
         {

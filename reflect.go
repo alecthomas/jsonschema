@@ -369,6 +369,12 @@ func (t *Type) stringKeywords(tags []string) {
 			case "pattern":
 				t.Pattern = val
 			}
+		} else {
+			name := nameValue[0]
+			switch name {
+			case "notEmpty":
+				t.Pattern = "^\\S"
+			}
 		}
 	}
 }
