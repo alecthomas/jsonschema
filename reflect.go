@@ -241,18 +241,21 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		delete(rt.PatternProperties, "additionalProperties")
 		return rt
 
-	case reflect.Slice:
+	case reflect.Slice, reflect.Array:
+		returnType := &Type{}
+		if t.Kind() == reflect.Array {
+			returnType.MinItems = t.Len()
+			returnType.MaxItems = returnType.MinItems
+		}
 		switch t {
 		case byteSliceType:
-			return &Type{
-				Type:  "string",
-				Media: &Type{BinaryEncoding: "base64"},
-			}
+			returnType.Type = "string"
+			returnType.Media = &Type{BinaryEncoding: "base64"}
+			return returnType
 		default:
-			return &Type{
-				Type:  "array",
-				Items: r.reflectTypeToSchema(definitions, t.Elem()),
-			}
+			returnType.Type = "array"
+			returnType.Items = r.reflectTypeToSchema(definitions, t.Elem())
+			return returnType
 		}
 
 	case reflect.Interface:
