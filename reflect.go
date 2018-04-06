@@ -234,11 +234,8 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 	case reflect.Map:
 		rt := &Type{
 			Type: "object",
-			PatternProperties: map[string]*Type{
-				".*": r.reflectTypeToSchema(definitions, t.Elem()),
-			},
+			PatternProperties: nil,
 		}
-		delete(rt.PatternProperties, "additionalProperties")
 		return rt
 
 	case reflect.Slice, reflect.Array:
