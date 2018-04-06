@@ -17,6 +17,7 @@ The following Go type:
 type TestUser struct {
   ID        int                    `json:"id"`
   Name      string                 `json:"name"`
+  Nickname  *string                `json:"nickname",jsonschema="allownull"`
   Friends   []int                  `json:"friends,omitempty"`
   Tags      map[string]interface{} `json:"tags,omitempty"`
   BirthDate time.Time              `json:"birth_date,omitempty"`
@@ -53,6 +54,16 @@ jsonschema.Reflect(&TestUser{})
         "name": {
           "type": "string"
         },
+        "nickname": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
         "tags": {
           "type": "object",
           "patternProperties": {
@@ -64,7 +75,7 @@ jsonschema.Reflect(&TestUser{})
         }
       },
       "additionalProperties": false,
-      "required": ["id", "name"]
+      "required": ["id", "name", "nickname"]
     }
   }
 }
