@@ -6,6 +6,7 @@
     "SomeUntaggedBaseProperty",
     "id",
     "name",
+    "nickname",
     "TestFlag",
     "age",
     "email"
@@ -71,6 +72,16 @@
     "network_address": {
       "type": "string",
       "format": "ipv4"
+    },
+    "nickname": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "photo": {
       "type": "string",

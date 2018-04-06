@@ -19,6 +19,7 @@
         "SomeUntaggedBaseProperty",
         "id",
         "name",
+        "nickname",
         "photo"
       ],
       "properties": {
@@ -82,6 +83,16 @@
         "network_address": {
           "type": "string",
           "format": "ipv4"
+        },
+        "nickname": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "photo": {
           "type": "string",

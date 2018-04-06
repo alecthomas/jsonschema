@@ -384,6 +384,12 @@ func (t *Type) stringKeywords(tags []string) {
 			switch name {
 			case "notEmpty":
 				t.Pattern = "^\\S"
+			case "allownull":
+				t.OneOf = []*Type{
+					{Type: t.Type},
+					{Type: "null"},
+				}
+				t.Type = ""
 			}
 		}
 	}
@@ -411,6 +417,16 @@ func (t *Type) numbericKeywords(tags []string) {
 			case "exclusiveMinimum":
 				b, _ := strconv.ParseBool(val)
 				t.ExclusiveMinimum = b
+			}
+		} else {
+			name := nameValue[0]
+			switch name {
+			case "allownull":
+				t.OneOf = []*Type{
+					{Type: t.Type},
+					{Type: "null"},
+				}
+				t.Type = ""
 			}
 		}
 	}
