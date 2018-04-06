@@ -236,6 +236,16 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			Type: "object",
 			PatternProperties: nil,
 		}
+
+		// map[...]interface{} should allow any child type. If another value type is specified,
+		// It should be added to the object properties spec.
+		if t.Elem().Kind() != reflect.Interface {
+			rt.PatternProperties = map[string]*Type{
+				".*": r.reflectTypeToSchema(definitions, t.Elem()),
+			}
+			delete(rt.PatternProperties, "additionalProperties")
+		}
+
 		return rt
 
 	case reflect.Slice, reflect.Array:

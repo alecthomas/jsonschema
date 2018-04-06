@@ -66,6 +66,14 @@
         "id": {
           "type": "integer"
         },
+        "keywords": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "name": {
           "type": "string",
           "maxLength": 20,
