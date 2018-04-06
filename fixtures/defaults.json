@@ -89,12 +89,6 @@
           "type": "integer"
         },
         "tags": {
-          "patternProperties": {
-            ".*": {
-              "additionalProperties": true,
-              "type": "object"
-            }
-          },
           "type": "object"
         },
         "website": {
