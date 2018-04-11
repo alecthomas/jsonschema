@@ -153,9 +153,33 @@ type protoEnum interface {
 	EnumDescriptor() ([]byte, []int)
 }
 
-var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
+// Implement AndOneOf() when oneOf is used to factor out common parts of subschema
+// {
+//  "type": "number",
+//  "oneOf": [
+//    { "multipleOf": 5 },
+//    { "multipleOf": 3 }
+//  ]
+//}
+type andOneOf interface {
+	AndOneOf() []reflect.StructField
+}
 
-func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
+// Implement OneOf() when oneOf is exclusive
+// {
+//  "oneOf": [
+//    { "type": "number", "multipleOf": 5 },
+//    { "type": "number", "multipleOf": 3 }
+//  ]
+// }
+type oneOf interface {
+	OneOf() []reflect.StructField
+}
+var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
+var andOneOfType = reflect.TypeOf((*andOneOf)(nil)).Elem()
+var oneOfType = reflect.TypeOf((*oneOf)(nil)).Elem()
+
+func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) (schema *Type) {
 	// Already added to definitions?
 	if _, ok := definitions[t.Name()]; ok {
 		return &Type{Ref: "#/definitions/" + t.Name()}
@@ -169,6 +193,22 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			{Type: "integer"},
 		}}
 	}
+
+	// Return only oneOf array when OneOf() is implemented
+	if t.Implements(oneOfType) {
+		s := reflect.New(t).Interface().(oneOf).OneOf()
+		return &Type{OneOf: r.getOneOfList(definitions, s)}
+	}
+
+	// Append oneOf array to existing non-object type when AndOneOf() is implemented
+	defer func() {
+		if t.Kind() != reflect.Struct {
+			if t.Implements(andOneOfType) {
+				s := reflect.New(t).Interface().(andOneOf).AndOneOf()
+				schema.OneOf = r.getOneOfList(definitions, s)
+			}
+		}
+	}()
 
 	// Defined format types for JSON Schema Validation
 	// RFC draft-wright-json-schema-validation-00, section 7.3
@@ -194,11 +234,18 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 	case reflect.Map:
 		rt := &Type{
 			Type: "object",
-			PatternProperties: map[string]*Type{
-				".*": r.reflectTypeToSchema(definitions, t.Elem()),
-			},
+			PatternProperties: nil,
 		}
-		delete(rt.PatternProperties, "additionalProperties")
+
+		// map[...]interface{} should allow any child type. If another value type is specified,
+		// It should be added to the object properties spec.
+		if t.Elem().Kind() != reflect.Interface {
+			rt.PatternProperties = map[string]*Type{
+				".*": r.reflectTypeToSchema(definitions, t.Elem()),
+			}
+			delete(rt.PatternProperties, "additionalProperties")
+		}
+
 		return rt
 
 	case reflect.Slice, reflect.Array:
@@ -285,6 +332,12 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 		if required {
 			st.Required = append(st.Required, name)
 		}
+
+		// Append oneOf array to existing object type when AndOneOf() is implemented
+		if t.Implements(andOneOfType) {
+			s := reflect.New(t).Interface().(andOneOf).AndOneOf()
+			st.OneOf = r.getOneOfList(definitions, s)
+		}
 	}
 }
 
@@ -299,6 +352,8 @@ func (t *Type) structKeywordsFromTags(f reflect.StructField) {
 		t.numbericKeywords(tags)
 	case "array":
 		t.arrayKeywords(tags)
+	case "":
+		t.stringKeywords(tags)
 	}
 }
 
@@ -321,6 +376,20 @@ func (t *Type) stringKeywords(tags []string) {
 					t.Format = val
 					break
 				}
+			case "pattern":
+				t.Pattern = val
+			}
+		} else {
+			name := nameValue[0]
+			switch name {
+			case "notEmpty":
+				t.Pattern = "^\\S"
+			case "allowNull":
+				t.OneOf = []*Type{
+					{Type: t.Type},
+					{Type: "null"},
+				}
+				t.Type = ""
 			}
 		}
 	}
@@ -348,6 +417,16 @@ func (t *Type) numbericKeywords(tags []string) {
 			case "exclusiveMinimum":
 				b, _ := strconv.ParseBool(val)
 				t.ExclusiveMinimum = b
+			}
+		} else {
+			name := nameValue[0]
+			switch name {
+			case "allowNull":
+				t.OneOf = []*Type{
+					{Type: t.Type},
+					{Type: "null"},
+				}
+				t.Type = ""
 			}
 		}
 	}
@@ -450,4 +529,17 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 	}
 
 	return name, required
+}
+
+func (r *Reflector) getOneOfList(definitions Definitions, s []reflect.StructField) []*Type {
+	oneOfList := make([]*Type, 0)
+	for _, oneType := range s {
+		if oneType.Type == nil {
+			oneOfList = append(oneOfList, &Type{Type: "null"})
+		} else {
+			oneOfList = append(oneOfList, r.reflectTypeToSchema(definitions, oneType.Type))
+		}
+	}
+
+	return oneOfList
 }

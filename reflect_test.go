@@ -48,10 +48,12 @@ type TestUser struct {
 	SomeBaseType
 	nonExported
 
-	ID      int                    `json:"id" jsonschema:"required"`
-	Name    string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20"`
-	Friends []int                  `json:"friends,omitempty"`
-	Tags    map[string]interface{} `json:"tags,omitempty"`
+	ID       int                    `json:"id" jsonschema:"required"`
+	Name     string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20"`
+	Nickname *string                `json:"nickname" jsonschema:"required,allowNull"`
+	Friends  []int                  `json:"friends,omitempty"`
+	Tags     map[string]interface{} `json:"tags,omitempty"`
+	Keywords map[string]string      `json:"keywords,omitempty"`
 
 	TestFlag       bool
 	IgnoredCounter int `json:"-"`
@@ -108,4 +110,102 @@ func TestSchemaGeneration(t *testing.T) {
 			}
 		})
 	}
+}
+
+type TestUserOneOf struct {
+	Tester    Tester    `json:"tester" jsonschema:"required"`
+	Developer Developer `json:"developer" jsonschema:"required"`
+}
+
+func (user TestUserOneOf) OneOf() []reflect.StructField {
+	tester, _ := reflect.TypeOf(user).FieldByName("Tester")
+	developer, _ := reflect.TypeOf(user).FieldByName("Developer")
+	return []reflect.StructField{
+		tester,
+		developer,
+	}
+}
+
+// Tester  struct
+type Tester struct {
+	Experience StringOrNull `json:"experience"`
+}
+
+// Developer  struct
+type Developer struct {
+	Experience StringOrNull `json:"experience" jsonschema:"minLength=1"`
+	Language   StringOrNull `json:"language" jsonschema:"required,pattern=\\S+"`
+	HardwareChoice Hardware  `json:"hardware"`
+}
+
+type StringOrNull struct {
+	String string
+	IsNull bool
+}
+
+type Hardware struct {
+	Brand string `json:"brand" jsonschema:"required,notEmpty"`
+	Memory int `json:"memory" jsonschema:"required"`
+}
+
+type Laptop struct {
+	Brand string `json:"brand" jsonschema:"pattern=^(apple|lenovo|dell)$"`
+	NeedTouchScreen bool `json:"need_touchscreen"`
+}
+
+type Desktop struct {
+	FormFactor string `json:"form_factor" jsonschema:"pattern=^(standard|micro|mini|nano)"`
+	NeedKeyboard bool `json:"need_keyboard"`
+}
+
+func (p StringOrNull) OneOf() []reflect.StructField {
+	strings, _ := reflect.TypeOf(p).FieldByName("String")
+	return []reflect.StructField{
+		strings,
+		reflect.StructField{Type: nil},
+	}
+}
+
+func (h Hardware) AndOneOf() []reflect.StructField {
+	return []reflect.StructField{
+		reflect.StructField{Type: reflect.TypeOf(Laptop{})},
+		reflect.StructField{Type: reflect.TypeOf(Hardware{})},
+	}
+}
+
+var oneOfSchemaGenerationTests = []struct {
+	reflector *Reflector
+	fixture   string
+}{
+	{&Reflector{}, "fixtures/test_one_of_default.json"},
+}
+func TestOneOfSchemaGeneration(t *testing.T) {
+	for _, tt := range oneOfSchemaGenerationTests {
+		name := strings.TrimSuffix(filepath.Base(tt.fixture), ".json")
+		t.Run(name, func(t *testing.T) {
+			f, err := ioutil.ReadFile(tt.fixture)
+			if err != nil {
+				t.Errorf("ioutil.ReadAll(%s): %s", tt.fixture, err)
+				return
+			}
+
+			actualSchema := tt.reflector.Reflect(TestUserOneOf{})
+			expectedSchema := &Schema{}
+
+			if err := json.Unmarshal(f, expectedSchema); err != nil {
+				t.Errorf("json.Unmarshal(%s, %v): %s", tt.fixture, expectedSchema, err)
+				return
+			}
+
+			if !reflect.DeepEqual(actualSchema, expectedSchema) {
+				actualJSON, err := json.MarshalIndent(actualSchema, "", "  ")
+				if err != nil {
+					t.Errorf("json.MarshalIndent(%v, \"\", \"  \"): %v", actualSchema, err)
+					return
+				}
+				t.Errorf("reflector %+v wanted schema %s, got %s", tt.reflector, f, actualJSON)
+			}
+		})
+	}
+
 }
