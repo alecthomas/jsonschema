@@ -234,25 +234,35 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 	case reflect.Map:
 		rt := &Type{
 			Type: "object",
-			PatternProperties: map[string]*Type{
-				".*": r.reflectTypeToSchema(definitions, t.Elem()),
-			},
+			PatternProperties: nil,
 		}
-		delete(rt.PatternProperties, "additionalProperties")
+
+		// map[...]interface{} should allow any child type. If another value type is specified,
+		// It should be added to the object properties spec.
+		if t.Elem().Kind() != reflect.Interface {
+			rt.PatternProperties = map[string]*Type{
+				".*": r.reflectTypeToSchema(definitions, t.Elem()),
+			}
+			delete(rt.PatternProperties, "additionalProperties")
+		}
+
 		return rt
 
-	case reflect.Slice:
+	case reflect.Slice, reflect.Array:
+		returnType := &Type{}
+		if t.Kind() == reflect.Array {
+			returnType.MinItems = t.Len()
+			returnType.MaxItems = returnType.MinItems
+		}
 		switch t {
 		case byteSliceType:
-			return &Type{
-				Type:  "string",
-				Media: &Type{BinaryEncoding: "base64"},
-			}
+			returnType.Type = "string"
+			returnType.Media = &Type{BinaryEncoding: "base64"}
+			return returnType
 		default:
-			return &Type{
-				Type:  "array",
-				Items: r.reflectTypeToSchema(definitions, t.Elem()),
-			}
+			returnType.Type = "array"
+			returnType.Items = r.reflectTypeToSchema(definitions, t.Elem())
+			return returnType
 		}
 
 	case reflect.Interface:
@@ -382,6 +392,12 @@ func (t *Type) stringKeywords(tags []string) {
 			switch name {
 			case "notEmpty":
 				t.Pattern = "^\\S"
+			case "allowNull":
+				t.OneOf = []*Type{
+					{Type: t.Type},
+					{Type: "null"},
+				}
+				t.Type = ""
 			}
 		}
 	}
@@ -417,6 +433,16 @@ func (t *Type) numbericKeywords(tags []string) {
 				}
 
 				t.Enum = s
+			}
+		} else {
+			name := nameValue[0]
+			switch name {
+			case "allowNull":
+				t.OneOf = []*Type{
+					{Type: t.Type},
+					{Type: "null"},
+				}
+				t.Type = ""
 			}
 		}
 	}

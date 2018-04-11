@@ -6,6 +6,7 @@
     "SomeUntaggedBaseProperty",
     "id",
     "name",
+    "nickname",
     "TestFlag",
     "age",
     "email"
@@ -55,6 +56,14 @@
     "id": {
       "type": "integer"
     },
+    "keywords": {
+      "patternProperties": {
+        ".*": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "name": {
         "type": "string",
         "maxLength": 20,
@@ -63,6 +72,16 @@
     "network_address": {
       "type": "string",
       "format": "ipv4"
+    },
+    "nickname": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "photo": {
       "type": "string",
@@ -94,12 +113,6 @@
       "type": "integer"
     },
     "tags": {
-      "patternProperties": {
-        ".*": {
-          "additionalProperties": true,
-          "type": "object"
-        }
-      },
       "type": "object"
     },
     "website": {
