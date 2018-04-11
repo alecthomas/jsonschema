@@ -360,6 +360,14 @@ func (t *Type) stringKeywords(tags []string) {
 			case "maxLength":
 				i, _ := strconv.Atoi(val)
 				t.MaxLength = i
+			case "enum":
+				enum := strings.Split(val, "|")
+				s := make([]interface{}, len(enum))
+				for k, v := range enum {
+					s[k] = v
+				}
+
+				t.Enum = s
 			case "format":
 				switch val {
 				case "date-time", "email", "hostname", "ipv4", "ipv6", "uri":
@@ -401,6 +409,14 @@ func (t *Type) numbericKeywords(tags []string) {
 			case "exclusiveMinimum":
 				b, _ := strconv.ParseBool(val)
 				t.ExclusiveMinimum = b
+			case "enum":
+				enum := strings.Split(val, "|")
+				s := make([]interface{}, len(enum))
+				for k, v := range enum {
+					s[k], _ = strconv.Atoi(v)
+				}
+
+				t.Enum = s
 			}
 		}
 	}

@@ -32,20 +32,20 @@
         "TestFlag": {
           "type": "boolean"
         },
-        "age":{
+        "age": {
           "maximum": 120,
-          "minimum": 18,
           "exclusiveMaximum": true,
+          "minimum": 18,
           "exclusiveMinimum": true,
           "type": "integer"
-        },  
-        "email": {
-          "type": "string",
-          "format": "email"
         },
         "birth_date": {
           "type": "string",
           "format": "date-time"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
         },
         "feeling": {
           "oneOf": [
@@ -71,9 +71,9 @@
           "type": "integer"
         },
         "name": {
-          "type": "string",
           "maxLength": 20,
-          "minLength": 1
+          "minLength": 1,
+          "type": "string"
         },
         "network_address": {
           "type": "string",
@@ -84,6 +84,26 @@
           "media": {
             "binaryEncoding": "base64"
           }
+        },
+        "secret_number": {
+          "enum": [
+            9,
+            30,
+            28,
+            52
+          ],
+          "type": "integer"
+        },
+        "sex": {
+          "enum": [
+            "male",
+            "female",
+            "neither",
+            "whatever",
+            "other",
+            "not applicable"
+          ],
+          "type": "string"
         },
         "some_base_property": {
           "type": "integer"

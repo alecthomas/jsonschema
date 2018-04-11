@@ -68,6 +68,9 @@ type TestUser struct {
 	Feeling ProtoEnum `json:"feeling,omitempty"`
 	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true"`
 	Email   string    `json:"email" jsonschema:"format=email"`
+
+	SecretNumber int  `json:"secret_number,omitempty" jsonschema:"enum=9|30|28|52"`
+	Sex		string    `json:"sex,omitempty" jsonschema:"enum=male|female|neither|whatever|other|not applicable"`
 }
 
 var schemaGenerationTests = []struct {
@@ -99,7 +102,7 @@ func TestSchemaGeneration(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(actualSchema, expectedSchema) {
-				actualJSON, err := json.MarshalIndent(actualSchema, "", "  ")
+				actualJSON, err := json.MarshalIndent(actualSchema, "", " ")
 				if err != nil {
 					t.Errorf("json.MarshalIndent(%v, \"\", \"  \"): %v", actualSchema, err)
 					return
