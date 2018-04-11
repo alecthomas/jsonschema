@@ -81,6 +81,26 @@
             "binaryEncoding": "base64"
           }
         },
+        "secret_number": {
+          "enum": [
+            9,
+            30,
+            28,
+            52
+          ],
+          "type": "integer"
+        },
+        "sex": {
+          "enum": [
+            "male",
+            "female",
+            "neither",
+            "whatever",
+            "other",
+            "not applicable"
+          ],
+          "type": "string"
+        },
         "some_base_property": {
           "type": "integer"
         },
