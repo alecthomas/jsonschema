@@ -384,7 +384,7 @@ func (t *Type) stringKeywords(tags []string) {
 			switch name {
 			case "notEmpty":
 				t.Pattern = "^\\S"
-			case "allownull":
+			case "allowNull":
 				t.OneOf = []*Type{
 					{Type: t.Type},
 					{Type: "null"},
@@ -421,7 +421,7 @@ func (t *Type) numbericKeywords(tags []string) {
 		} else {
 			name := nameValue[0]
 			switch name {
-			case "allownull":
+			case "allowNull":
 				t.OneOf = []*Type{
 					{Type: t.Type},
 					{Type: "null"},

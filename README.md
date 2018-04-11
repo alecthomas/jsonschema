@@ -17,7 +17,7 @@ The following Go type:
 type TestUser struct {
   ID        int                    `json:"id"`
   Name      string                 `json:"name"`
-  Nickname  *string                `json:"nickname",jsonschema="allownull"`
+  Nickname  *string                `json:"nickname",jsonschema="allowNull"`
   Friends   []int                  `json:"friends,omitempty"`
   Tags      map[string]interface{} `json:"tags,omitempty"`
   BirthDate time.Time              `json:"birth_date,omitempty"`
