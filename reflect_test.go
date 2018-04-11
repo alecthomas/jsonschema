@@ -48,10 +48,12 @@ type TestUser struct {
 	SomeBaseType
 	nonExported
 
-	ID      int                    `json:"id" jsonschema:"required"`
-	Name    string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20"`
-	Friends []int                  `json:"friends,omitempty"`
-	Tags    map[string]interface{} `json:"tags,omitempty"`
+	ID       int                    `json:"id" jsonschema:"required"`
+	Name     string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20"`
+	Nickname *string                `json:"nickname" jsonschema:"required,allowNull"`
+	Friends  []int                  `json:"friends,omitempty"`
+	Tags     map[string]interface{} `json:"tags,omitempty"`
+	Keywords map[string]string      `json:"keywords,omitempty"`
 
 	TestFlag       bool
 	IgnoredCounter int `json:"-"`

@@ -234,11 +234,18 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 	case reflect.Map:
 		rt := &Type{
 			Type: "object",
-			PatternProperties: map[string]*Type{
-				".*": r.reflectTypeToSchema(definitions, t.Elem()),
-			},
+			PatternProperties: nil,
 		}
-		delete(rt.PatternProperties, "additionalProperties")
+
+		// map[...]interface{} should allow any child type. If another value type is specified,
+		// It should be added to the object properties spec.
+		if t.Elem().Kind() != reflect.Interface {
+			rt.PatternProperties = map[string]*Type{
+				".*": r.reflectTypeToSchema(definitions, t.Elem()),
+			}
+			delete(rt.PatternProperties, "additionalProperties")
+		}
+
 		return rt
 
 	case reflect.Slice, reflect.Array:
@@ -377,6 +384,12 @@ func (t *Type) stringKeywords(tags []string) {
 			switch name {
 			case "notEmpty":
 				t.Pattern = "^\\S"
+			case "allowNull":
+				t.OneOf = []*Type{
+					{Type: t.Type},
+					{Type: "null"},
+				}
+				t.Type = ""
 			}
 		}
 	}
@@ -404,6 +417,16 @@ func (t *Type) numbericKeywords(tags []string) {
 			case "exclusiveMinimum":
 				b, _ := strconv.ParseBool(val)
 				t.ExclusiveMinimum = b
+			}
+		} else {
+			name := nameValue[0]
+			switch name {
+			case "allowNull":
+				t.OneOf = []*Type{
+					{Type: t.Type},
+					{Type: "null"},
+				}
+				t.Type = ""
 			}
 		}
 	}
