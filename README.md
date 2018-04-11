@@ -60,7 +60,7 @@ jsonschema.Reflect(&TestUser{})
               "type": "string"
             },
             {
-              "type": "integer"
+              "type": "null"
             }
           ]
         },
