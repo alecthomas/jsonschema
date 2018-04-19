@@ -70,6 +70,9 @@ type TestUser struct {
 	Feeling ProtoEnum `json:"feeling,omitempty"`
 	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true"`
 	Email   string    `json:"email" jsonschema:"format=email"`
+
+	SecretNumber int  `json:"secret_number,omitempty" jsonschema:"enum=9|30|28|52"`
+	Sex		string    `json:"sex,omitempty" jsonschema:"enum=male|female|neither|whatever|other|not applicable"`
 }
 
 var schemaGenerationTests = []struct {
@@ -100,16 +103,67 @@ func TestSchemaGeneration(t *testing.T) {
 				return
 			}
 
+			expectedSchema.Type = reconcileTypes(expectedSchema.Type)
+			expectedSchema.Definitions = reconcileEnumTypes(expectedSchema.Definitions)
+
 			if !reflect.DeepEqual(actualSchema, expectedSchema) {
-				actualJSON, err := json.MarshalIndent(actualSchema, "", "  ")
+				actualJSON, err := json.Marshal(actualSchema)
 				if err != nil {
 					t.Errorf("json.MarshalIndent(%v, \"\", \"  \"): %v", actualSchema, err)
 					return
 				}
-				t.Errorf("reflector %+v wanted schema %s, got %s", tt.reflector, f, actualJSON)
+
+				expectedJSON, err := json.Marshal(expectedSchema)
+				if err != nil {
+					t.Errorf("json.MarshalIndent(%v, \"\", \"  \"): %v", expectedJSON, err)
+					return
+				}
+
+				t.Errorf("reflector %+v wanted schema %s, got %s", tt.reflector, expectedJSON, actualJSON)
 			}
 		})
 	}
+}
+
+// The marshaling of json into interface{} results in a mismatch when we DeepEqual the expected/actual schemas for enum
+// This coerces all float64 enums back to int
+func reconcileTypes(t *Type) *Type {
+	t.Definitions = reconcileEnumTypes(t.Definitions)
+	t.Properties = convertEnum(t.Properties)
+
+	return t
+}
+
+func reconcileEnumTypes(definitions Definitions) Definitions {
+	mismatched := convertDefinitions(definitions)
+	converted :=  convertEnum(mismatched)
+
+	return Definitions(converted)
+}
+
+func convertDefinitions(definitions Definitions) map[string]*Type {
+	return map[string]*Type(definitions)
+}
+
+func convertEnum(definitions map[string]*Type) map[string]*Type {
+	for _, v := range definitions {
+		if len(v.Definitions) > 0 {
+			d := convertDefinitions(v.Definitions)
+			v.Definitions = convertEnum(d)
+		}
+
+		if len(v.Properties) > 0 {
+			v.Properties = convertEnum(v.Properties)
+		}
+
+		if len(v.Enum) > 0 && (reflect.TypeOf(v.Enum[0]).Kind() == reflect.Float64) {
+			for idx, val := range v.Enum {
+				v.Enum[idx] = int(val.(float64))
+			}
+		}
+	}
+
+	return definitions
 }
 
 type TestUserOneOf struct {
@@ -209,3 +263,4 @@ func TestOneOfSchemaGeneration(t *testing.T) {
 	}
 
 }
+
