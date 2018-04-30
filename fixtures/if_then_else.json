@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/Application",
+  "definitions": {
+    "Application": {
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "if": {
+        "properties": {
+          "type": {
+            "enum": [
+              "web"
+            ]
+          }
+        }
+      },
+      "then": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/WebApp"
+      },
+      "else": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/MobileApp"
+      }
+    },
+    "MobileApp": {
+      "required": [
+        "device"
+      ],
+      "properties": {
+        "device": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "WebApp": {
+      "required": [
+        "browser"
+      ],
+      "properties": {
+        "browser": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}

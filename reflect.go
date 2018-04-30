@@ -28,6 +28,13 @@ type Schema struct {
 	Definitions Definitions `json:"definitions,omitempty"`
 }
 
+// SchemaCondition holds data for if/then/else jsonschema statements
+type SchemaCondition struct {
+	If   reflect.StructField
+	Then interface{}
+	Else interface{}
+}
+
 // Type represents a JSON Schema object type.
 type Type struct {
 	// RFC draft-wright-json-schema-00
@@ -59,8 +66,11 @@ type Type struct {
 	AllOf                []*Type          `json:"allOf,omitempty"`                // section 5.22
 	AnyOf                []*Type          `json:"anyOf,omitempty"`                // section 5.23
 	OneOf                []*Type          `json:"oneOf,omitempty"`                // section 5.24
-	Not                  *Type            `json:"not,omitempty"`                  // section 5.25
-	Definitions          Definitions      `json:"definitions,omitempty"`          // section 5.26
+	If                   *Type            `json:"if,omitempty"`
+	Then                 *Type            `json:"then,omitempty"`
+	Else                 *Type            `json:"else,omitempty"`
+	Not                  *Type            `json:"not,omitempty"`         // section 5.25
+	Definitions          Definitions      `json:"definitions,omitempty"` // section 5.26
 	// RFC draft-wright-json-schema-validation-00, section 6, 7
 	Title       string      `json:"title,omitempty"`       // section 6.1
 	Description string      `json:"description,omitempty"` // section 6.1
@@ -175,9 +185,21 @@ type andOneOf interface {
 type oneOf interface {
 	OneOf() []reflect.StructField
 }
+
+//Implement IfThenElse() when condition needs to be used
+// {
+//    "if": { "properties": { "power": { "minimum": 9000 } } },
+//    "then": { "required": [ "disbelief" ] },
+//    "else": { "required": [ "confidence" ] }
+// }
+type ifThenElse interface {
+	IfThenElse() SchemaCondition
+}
+
 var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 var andOneOfType = reflect.TypeOf((*andOneOf)(nil)).Elem()
 var oneOfType = reflect.TypeOf((*oneOf)(nil)).Elem()
+var ifThenElseType = reflect.TypeOf((*ifThenElse)(nil)).Elem()
 
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) (schema *Type) {
 	// Already added to definitions?
@@ -233,7 +255,7 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 
 	case reflect.Map:
 		rt := &Type{
-			Type: "object",
+			Type:              "object",
 			PatternProperties: nil,
 		}
 
@@ -302,10 +324,33 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 	}
 	definitions[t.Name()] = st
 	r.reflectStructFields(st, definitions, t)
+	if t.Implements(ifThenElseType) {
+		condition := reflect.New(t).Interface().(ifThenElse).IfThenElse()
+		r.reflectCondition(definitions, condition, st)
+	}
 
 	return &Type{
 		Version: Version,
 		Ref:     "#/definitions/" + t.Name(),
+	}
+}
+
+func (r *Reflector) reflectCondition(definitions Definitions, sc SchemaCondition, t *Type) {
+	conditionSchema := Type{}
+	conditionSchema.structKeywordsFromTags(sc.If)
+
+	condition := &Type{
+		Properties: map[string]*Type{
+			sc.If.Tag.Get("json"): &conditionSchema,
+		},
+	}
+
+	t.If = condition
+	if reflect.TypeOf(sc.Then) != nil {
+		t.Then = r.reflectTypeToSchema(definitions, reflect.TypeOf(sc.Then))
+	}
+	if reflect.TypeOf(sc.Else) != nil {
+		t.Else = r.reflectTypeToSchema(definitions, reflect.TypeOf(sc.Else))
 	}
 }
 
