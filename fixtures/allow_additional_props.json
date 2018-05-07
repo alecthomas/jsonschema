@@ -33,20 +33,20 @@
         "TestFlag": {
           "type": "boolean"
         },
-        "age":{
+        "age": {
           "maximum": 120,
-          "minimum": 18,
           "exclusiveMaximum": true,
+          "minimum": 18,
           "exclusiveMinimum": true,
           "type": "integer"
-        },  
-        "email": {
-          "type": "string",
-          "format": "email"
         },
         "birth_date": {
           "type": "string",
           "format": "date-time"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
         },
         "feeling": {
           "oneOf": [
@@ -80,9 +80,9 @@
           "type": "object"
         },
         "name": {
-          "type": "string",
           "maxLength": 20,
-          "minLength": 1
+          "minLength": 1,
+          "type": "string"
         },
         "network_address": {
           "type": "string",
@@ -103,6 +103,15 @@
           "media": {
             "binaryEncoding": "base64"
           }
+        },
+        "secret_float_number": {
+          "enum": [
+            9.1,
+            30.2,
+            28.4,
+            52.9
+          ],
+          "type": "number"
         },
         "secret_number": {
           "enum": [

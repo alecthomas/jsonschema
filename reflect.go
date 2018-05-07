@@ -392,7 +392,7 @@ func (t *Type) structKeywordsFromTags(f reflect.StructField) {
 	case "string":
 		t.stringKeywords(tags)
 	case "number":
-		t.numbericKeywords(tags)
+		t.floatKeywords(tags)
 	case "integer":
 		t.numbericKeywords(tags)
 	case "array":
@@ -402,7 +402,7 @@ func (t *Type) structKeywordsFromTags(f reflect.StructField) {
 	}
 }
 
-// read struct tags for string type keyworks
+// read struct tags for string type keywords
 func (t *Type) stringKeywords(tags []string) {
 	for _, tag := range tags {
 		nameValue := strings.Split(tag, "=")
@@ -448,7 +448,7 @@ func (t *Type) stringKeywords(tags []string) {
 	}
 }
 
-// read struct tags for numberic type keyworks
+// read struct tags for numberic type keywords
 func (t *Type) numbericKeywords(tags []string) {
 	for _, tag := range tags {
 		nameValue := strings.Split(tag, "=")
@@ -476,7 +476,35 @@ func (t *Type) numbericKeywords(tags []string) {
 				for k, v := range enum {
 					s[k], _ = strconv.Atoi(v)
 				}
+				t.Enum = s
+			}
+		} else {
+			name := nameValue[0]
+			switch name {
+			case "allowNull":
+				t.OneOf = []*Type{
+					{Type: t.Type},
+					{Type: "null"},
+				}
+				t.Type = ""
+			}
+		}
+	}
+}
 
+// read struct tags for float type keywords
+func (t *Type) floatKeywords(tags []string) {
+	for _, tag := range tags {
+		nameValue := strings.Split(tag, "=")
+		if len(nameValue) == 2 {
+			name, val := nameValue[0], nameValue[1]
+			switch name {
+			case "enum":
+				enum := strings.Split(val, "|")
+				s := make([]interface{}, len(enum))
+				for k, v := range enum {
+					s[k], _ = strconv.ParseFloat(v, 64)
+				}
 				t.Enum = s
 			}
 		} else {

@@ -104,6 +104,15 @@
             "binaryEncoding": "base64"
           }
         },
+        "secret_float_number": {
+          "enum": [
+            9.1,
+            30.2,
+            28.4,
+            52.9
+          ],
+          "type": "number"
+        },
         "secret_number": {
           "enum": [
             9,
