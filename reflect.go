@@ -109,6 +109,12 @@ type Reflector struct {
 	// ExpandedStruct will cause the toplevel definitions of the schema not
 	// be referenced itself to a definition.
 	ExpandedStruct bool
+
+	// Overrides is of interface SchemaTagOverride and will be used to override any jsonschema tags on existing fields
+	// The expected use case is for shared nested structs where validation is stricter on certain fields
+	// For example a shared nested struct with field `Species` and tag `enum=Human|Dog|Alien` may be used by
+	// applications that want to declare a stricter tag `required,enum=Dog`
+	Overrides SchemaTagOverride
 }
 
 // Reflect reflects to Schema from a value.
@@ -337,7 +343,7 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 
 func (r *Reflector) reflectCondition(definitions Definitions, sc SchemaCondition, t *Type) {
 	conditionSchema := Type{}
-	conditionSchema.structKeywordsFromTags(sc.If)
+	conditionSchema.structKeywordsFromTags(r.getJSONSchemaTags(sc.If, nil))
 
 	condition := &Type{
 		Properties: map[string]*Type{
@@ -367,12 +373,12 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 			continue
 		}
 
-		name, required := r.reflectFieldName(f)
+		name, required := r.reflectFieldName(f, t)
 		if name == "" {
 			continue
 		}
 		property := r.reflectTypeToSchema(definitions, f.Type)
-		property.structKeywordsFromTags(f)
+		property.structKeywordsFromTags(r.getJSONSchemaTags(f, t))
 		st.Properties[name] = property
 		if required {
 			st.Required = append(st.Required, name)
@@ -386,8 +392,7 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 	}
 }
 
-func (t *Type) structKeywordsFromTags(f reflect.StructField) {
-	tags := strings.Split(f.Tag.Get("jsonschema"), ",")
+func (t *Type) structKeywordsFromTags(tags []string) {
 	switch t.Type {
 	case "string":
 		t.stringKeywords(tags)
@@ -590,7 +595,7 @@ func ignoredByJSONSchemaTags(tags []string) bool {
 	return tags[0] == "-"
 }
 
-func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
+func (r *Reflector) reflectFieldName(f reflect.StructField, t reflect.Type) (string, bool) {
 	if f.PkgPath != "" { // unexported field, ignore it
 		return "", false
 	}
@@ -601,7 +606,7 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 		return "", false
 	}
 
-	jsonSchemaTags := strings.Split(f.Tag.Get("jsonschema"), ",")
+	jsonSchemaTags := r.getJSONSchemaTags(f, t)
 	if ignoredByJSONSchemaTags(jsonSchemaTags) {
 		return "", false
 	}
@@ -631,4 +636,16 @@ func (r *Reflector) getOneOfList(definitions Definitions, s []reflect.StructFiel
 	}
 
 	return oneOfList
+}
+
+func (r *Reflector) getJSONSchemaTags(f reflect.StructField, t reflect.Type) []string {
+	tag := f.Tag.Get("jsonschema")
+
+	if r.Overrides != nil && t != nil {
+		if tagOverride := r.Overrides.Get(t, f.Name); tagOverride != "" {
+			tag = tagOverride
+		}
+	}
+
+	return strings.Split(tag, ",")
 }
