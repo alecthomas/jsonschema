@@ -26,4 +26,3 @@ func (app Application) IfThenElse() SchemaCondition {
 		Else: MobileApp{},
 	}
 }
-

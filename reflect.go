@@ -210,7 +210,7 @@ var ifThenElseType = reflect.TypeOf((*ifThenElse)(nil)).Elem()
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) (schema *Type) {
 	// Already added to definitions?
 	if _, ok := definitions[t.Name()]; ok {
-		return &Type{Ref: "#/definitions/" + t.Name()}
+		return &Type{Ref: "#/definitions/" + getPackageNameFromPath(t.PkgPath()) + "." + t.Name()}
 	}
 
 	// jsonpb will marshal protobuf enum options as either strings or integers.
@@ -328,7 +328,8 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 	if r.AllowAdditionalProperties {
 		st.AdditionalProperties = []byte("true")
 	}
-	definitions[t.Name()] = st
+	packageName := getPackageNameFromPath(t.PkgPath())
+	definitions[packageName+"."+t.Name()] = st
 	r.reflectStructFields(st, definitions, t)
 	if t.Implements(ifThenElseType) {
 		condition := reflect.New(t).Interface().(ifThenElse).IfThenElse()
@@ -337,7 +338,7 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 
 	return &Type{
 		Version: Version,
-		Ref:     "#/definitions/" + t.Name(),
+		Ref:     "#/definitions/" + packageName + "." + t.Name(),
 	}
 }
 
@@ -634,7 +635,6 @@ func (r *Reflector) getOneOfList(definitions Definitions, s []reflect.StructFiel
 			oneOfList = append(oneOfList, r.reflectTypeToSchema(definitions, oneType.Type))
 		}
 	}
-
 	return oneOfList
 }
 
@@ -648,4 +648,10 @@ func (r *Reflector) getJSONSchemaTags(f reflect.StructField, t reflect.Type) []s
 	}
 
 	return strings.Split(tag, ",")
+}
+
+// getPackageNameFromPath splits path to struct and return last element which is package name
+func getPackageNameFromPath(path string) string {
+	pathSlices := strings.Split(path, "/")
+	return pathSlices[len(pathSlices)-1]
 }

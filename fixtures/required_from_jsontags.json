@@ -1,27 +1,19 @@
 {
-  "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
-  "$ref": "#\/definitions\/TestUser",
+  "$ref": "#/definitions/jsonschema.TestUser",
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
-    "GrandfatherType": {
-      "required": [
-        "family_name"
-      ],
+    "jsonschema.GrandfatherType": {
+      "additionalProperties": false,
       "properties": {
         "family_name": {
           "type": "string"
         }
       },
-      "additionalProperties": false,
+      "required": ["family_name"],
       "type": "object"
     },
-    "TestUser": {
-      "required": [
-        "SomeUntaggedBaseProperty",
-        "id",
-        "name",
-        "nickname",
-        "photo"
-      ],
+    "jsonschema.TestUser": {
+      "additionalProperties": false,
       "properties": {
         "SomeUntaggedBaseProperty": {
           "type": "boolean"
@@ -30,10 +22,10 @@
           "type": "boolean"
         },
         "age": {
-          "maximum": 120,
           "exclusiveMaximum": true,
-          "minimum": 18,
           "exclusiveMinimum": true,
+          "maximum": 120,
+          "minimum": 18,
           "type": "integer"
         },
         "birth_date": {
@@ -61,8 +53,8 @@
           "type": "array"
         },
         "grand": {
-          "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
-          "$ref": "#\/definitions\/GrandfatherType"
+          "$ref": "#/definitions/jsonschema.GrandfatherType",
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "id": {
           "type": "integer"
@@ -95,10 +87,10 @@
           ]
         },
         "photo": {
-          "type": "string",
           "media": {
             "binaryEncoding": "base64"
-          }
+          },
+          "type": "string"
         },
         "secret_float_number": {
           "enum": [
@@ -140,7 +132,7 @@
           "format": "uri"
         }
       },
-      "additionalProperties": false,
+      "required": ["SomeUntaggedBaseProperty", "id", "name", "nickname", "photo"],
       "type": "object"
     }
   }

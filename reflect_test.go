@@ -21,6 +21,7 @@ var schemaGenerationTests = []testSet{
 	{&Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/required_from_jsontags.json", TestUser{}},
 	{&Reflector{ExpandedStruct: true}, "fixtures/defaults_expanded_toplevel.json", TestUser{}},
 	{&Reflector{}, "fixtures/test_one_of_default.json", TestUserOneOf{}},
+	{&Reflector{}, "fixtures/test_package.json", TestUserPackage{}},
 	{&Reflector{}, "fixtures/if_then_else.json", Application{}},
 }
 
@@ -29,7 +30,6 @@ func TestSchemaGeneration(t *testing.T) {
 		runTests(t, tt)
 	}
 }
-
 func TestOverrides(t *testing.T) {
 	override := GetSchemaTagOverride()
 	override.Set(Hardware{}, "Brand", "enum=microsoft|apple|lenovo|dell")

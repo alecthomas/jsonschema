@@ -1,0 +1,119 @@
+{
+  "definitions": {
+    "jsonschema.DeveloperPackage": {
+      "additionalProperties": false,
+      "properties": {
+        "experience": {
+          "minLength": 1,
+          "oneOf": [{
+            "type": "string"
+          }, {
+            "type": "null"
+          }]
+        },
+        "hardware": {
+          "$ref": "#/definitions/v1.Hardware",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "hardware1": {
+          "$ref": "#/definitions/v2.Hardware",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "language": {
+          "oneOf": [{
+            "type": "string"
+          }, {
+            "type": "null"
+          }],
+          "pattern": "\\S+"
+        }
+      },
+      "required": ["experience", "language", "hardware", "hardware1"],
+      "type": "object"
+    },
+    "jsonschema.TesterPackage": {
+      "additionalProperties": false,
+      "properties": {
+        "experience": {
+          "oneOf": [{
+            "type": "string"
+          }, {
+            "type": "null"
+          }]
+        }
+      },
+      "required": ["experience"],
+      "type": "object"
+    },
+    "v1.Hardware": {
+      "additionalProperties": false,
+      "oneOf": [{
+        "$ref": "#/definitions/v1.Laptop",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }, {
+        "$ref": "#/definitions/v1.PC",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }],
+      "properties": {
+        "brand": {
+          "pattern": "^\\S",
+          "type": "string"
+        },
+        "memory": {
+          "type": "integer"
+        }
+      },
+      "required": ["brand", "memory"],
+      "type": "object"
+    },
+    "v1.Laptop": {
+      "additionalProperties": false,
+      "properties": {
+        "brand": {
+          "pattern": "^(apple|lenovo|dell)$",
+          "type": "string"
+        },
+        "need_touchscreen": {
+          "type": "boolean"
+        }
+      },
+      "required": ["brand", "need_touchscreen"],
+      "type": "object"
+    },
+    "v1.PC": {
+      "additionalProperties": false,
+      "properties": {
+        "brand": {
+          "pattern": "^(apple|lenovo|dell)$",
+          "type": "string"
+        },
+        "need_touchscreen": {
+          "type": "boolean"
+        }
+      },
+      "required": ["brand", "need_touchscreen"],
+      "type": "object"
+    },
+    "v2.Hardware": {
+      "additionalProperties": false,
+      "properties": {
+        "brand": {
+          "pattern": "^\\S",
+          "type": "string"
+        },
+        "memory": {
+          "type": "integer"
+        }
+      },
+      "required": ["brand", "memory"],
+      "type": "object"
+    }
+  },
+  "oneOf": [{
+    "$ref": "#/definitions/jsonschema.TesterPackage",
+    "$schema": "http://json-schema.org/draft-04/schema#"
+  }, {
+    "$ref": "#/definitions/jsonschema.DeveloperPackage",
+    "$schema": "http://json-schema.org/draft-04/schema#"
+  }]
+}

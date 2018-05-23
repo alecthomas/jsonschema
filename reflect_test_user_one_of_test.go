@@ -59,6 +59,6 @@ func (p StringOrNull) OneOf() []reflect.StructField {
 func (h Hardware) AndOneOf() []reflect.StructField {
 	return []reflect.StructField{
 		reflect.StructField{Type: reflect.TypeOf(Laptop{})},
-		reflect.StructField{Type: reflect.TypeOf(Hardware{})},
+		reflect.StructField{Type: reflect.TypeOf(Desktop{})},
 	}
 }

@@ -1,21 +1,21 @@
 {
-  "oneOf": [
-    {
-      "$schema": "http://json-schema.org/draft-04/schema#",
-      "$ref": "#/definitions/Tester"
-    },
-    {
-      "$schema": "http://json-schema.org/draft-04/schema#",
-      "$ref": "#/definitions/Developer"
-    }
-  ],
   "definitions": {
-    "Developer": {
-      "required": [
-        "experience",
-        "language",
-        "hardware"
-      ],
+    "jsonschema.Desktop": {
+      "additionalProperties": false,
+      "properties": {
+        "form_factor": {
+          "pattern": "^(standard|micro|mini|nano)",
+          "type": "string"
+        },
+        "need_keyboard": {
+          "type": "boolean"
+        }
+      },
+      "required": ["form_factor", "need_keyboard"],
+      "type": "object"
+    },
+    "jsonschema.Developer": {
+      "additionalProperties": false,
       "properties": {
         "experience": {
           "minLength": 1,
@@ -29,8 +29,8 @@
           ]
         },
         "hardware": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/Hardware"
+          "$ref": "#/definitions/jsonschema.Hardware",
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "language": {
           "pattern": "\\S+",
@@ -44,14 +44,18 @@
           ]
         }
       },
-      "additionalProperties": false,
+      "required": ["experience", "language", "hardware"],
       "type": "object"
     },
-    "Hardware": {
-      "required": [
-        "brand",
-        "memory"
-      ],
+    "jsonschema.Hardware": {
+      "additionalProperties": false,
+      "oneOf": [{
+        "$ref": "#/definitions/jsonschema.Laptop",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }, {
+        "$ref": "#/definitions/jsonschema.Desktop",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }],
       "properties": {
         "brand": {
           "pattern": "^\\S",
@@ -61,22 +65,11 @@
           "type": "integer"
         }
       },
-      "additionalProperties": false,
-      "type": "object",
-      "oneOf": [
-        {
-          "$ref": "#/definitions/Laptop"
-        },
-        {
-          "$ref": "#/definitions/Hardware"
-        }
-      ]
+      "required": ["brand", "memory"],
+      "type": "object"
     },
-    "Laptop": {
-      "required": [
-        "brand",
-        "need_touchscreen"
-      ],
+    "jsonschema.Laptop": {
+      "additionalProperties": false,
       "properties": {
         "brand": {
           "pattern": "^(apple|lenovo|dell)$",
@@ -86,13 +79,11 @@
           "type": "boolean"
         }
       },
-      "additionalProperties": false,
+      "required": ["brand", "need_touchscreen"],
       "type": "object"
     },
-    "Tester": {
-      "required": [
-        "experience"
-      ],
+    "jsonschema.Tester": {
+      "additionalProperties": false,
       "properties": {
         "experience": {
           "oneOf": [
@@ -105,8 +96,15 @@
           ]
         }
       },
-      "additionalProperties": false,
+      "required": ["experience"],
       "type": "object"
     }
-  }
+  },
+  "oneOf": [{
+    "$ref": "#/definitions/jsonschema.Tester",
+    "$schema": "http://json-schema.org/draft-04/schema#"
+  }, {
+    "$ref": "#/definitions/jsonschema.Developer",
+    "$schema": "http://json-schema.org/draft-04/schema#"
+  }]
 }
