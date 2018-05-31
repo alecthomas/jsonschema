@@ -321,6 +321,13 @@ func (t *Type) stringKeywords(tags []string) {
 					t.Format = val
 					break
 				}
+			case "enum":
+				splits := strings.Split(val, ";")
+				slice := make([]interface{}, len(splits))
+				for i, v := range splits {
+					slice[i] = v
+				}
+				t.Enum = slice
 			}
 		}
 	}

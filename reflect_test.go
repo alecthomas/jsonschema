@@ -68,6 +68,8 @@ type TestUser struct {
 	Feeling ProtoEnum `json:"feeling,omitempty"`
 	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true"`
 	Email   string    `json:"email" jsonschema:"format=email"`
+	// Simple enum support (enum in schema, but only string in go property)
+	Gender string `json:"gender,omitempty" jsonschema:"enum=masculin;feminin;other"`
 }
 
 var schemaGenerationTests = []struct {
