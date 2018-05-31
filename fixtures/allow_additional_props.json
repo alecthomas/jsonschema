@@ -57,6 +57,14 @@
             }
           ]
         },
+        "gender": {
+          "enum": [
+            "masculin",
+            "feminin",
+            "other"
+          ],
+          "type": "string"
+        },
         "friends": {
           "items": {
             "type": "integer"
