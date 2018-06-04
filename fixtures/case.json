@@ -1,0 +1,128 @@
+{
+    "$ref": "#/definitions/jsonschema.ExampleCase",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "jsonschema.BoolPayload": {
+            "additionalProperties": false,
+            "properties": {
+                "payload": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "payload"
+            ],
+            "type": "object"
+        },
+        "jsonschema.ExampleCase": {
+            "additionalProperties": false,
+            "oneOf": [
+                {
+                    "else": {
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "bool"
+                                ]
+                            }
+                        }
+                    },
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "bool"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/jsonschema.BoolPayload",
+                        "$schema": "http://json-schema.org/draft-07/schema#"
+                    }
+                },
+                {
+                    "else": {
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "int"
+                                ]
+                            }
+                        }
+                    },
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "int"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/jsonschema.IntPayload",
+                        "$schema": "http://json-schema.org/draft-07/schema#"
+                    }
+                },
+                {
+                    "else": {
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "string"
+                                ]
+                            }
+                        }
+                    },
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "string"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/jsonschema.StringPayload",
+                        "$schema": "http://json-schema.org/draft-07/schema#"
+                    }
+                }
+            ],
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "type": "object"
+        },
+        "jsonschema.IntPayload": {
+            "additionalProperties": false,
+            "properties": {
+                "payload": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "payload"
+            ],
+            "type": "object"
+        },
+        "jsonschema.StringPayload": {
+            "additionalProperties": false,
+            "properties": {
+                "payload": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "payload"
+            ],
+            "type": "object"
+        }
+    }
+}

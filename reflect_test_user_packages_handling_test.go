@@ -1,9 +1,10 @@
 package jsonschema
 
 import (
-	"./v1"
-	"./v2"
 	"reflect"
+
+	"github.com/discovery-digital/jsonschema/v1"
+	"github.com/discovery-digital/jsonschema/v2"
 )
 
 type TestUserPackage struct {

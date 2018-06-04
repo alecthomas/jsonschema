@@ -32,7 +32,7 @@ jsonschema.Reflect(&TestUser{})
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$ref": "#/definitions/TestUser",
   "definitions": {
     "TestUser": {
@@ -114,7 +114,7 @@ will output:
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "required": [
     "some_base_property",
     "grand",
@@ -125,7 +125,7 @@ will output:
       "type": "boolean"
     },
     "grand": {
-      "$schema": "http://json-schema.org/draft-04/schema#",
+      "$schema": "http://json-schema.org/draft-07/schema#",
       "$ref": "#/definitions/GrandfatherType"
     },
     "some_base_property": {

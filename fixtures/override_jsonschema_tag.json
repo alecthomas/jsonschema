@@ -30,7 +30,7 @@
         },
         "hardware": {
           "$ref": "#/definitions/jsonschema.Hardware",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "language": {
           "pattern": "\\S+",
@@ -51,10 +51,10 @@
       "additionalProperties": false,
       "oneOf": [{
         "$ref": "#/definitions/jsonschema.Laptop",
-        "$schema": "http://json-schema.org/draft-04/schema#"
+        "$schema": "http://json-schema.org/draft-07/schema#"
       }, {
         "$ref": "#/definitions/jsonschema.Desktop",
-        "$schema": "http://json-schema.org/draft-04/schema#"
+        "$schema": "http://json-schema.org/draft-07/schema#"
       }],
       "properties": {
         "brand": {
@@ -102,9 +102,9 @@
   },
   "oneOf": [{
     "$ref": "#/definitions/jsonschema.Tester",
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "$schema": "http://json-schema.org/draft-07/schema#"
   }, {
     "$ref": "#/definitions/jsonschema.Developer",
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "$schema": "http://json-schema.org/draft-07/schema#"
   }]
 }

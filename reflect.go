@@ -19,7 +19,7 @@ import (
 // Version is the JSON Schema version.
 // If extending JSON Schema with custom values use a custom URI.
 // RFC draft-wright-json-schema-00, section 6
-var Version = "http://json-schema.org/draft-04/schema#"
+var Version = "http://json-schema.org/draft-07/schema#"
 
 // Schema is the root schema.
 // RFC draft-wright-json-schema-00, section 4.5
@@ -33,6 +33,12 @@ type SchemaCondition struct {
 	If   reflect.StructField
 	Then interface{}
 	Else interface{}
+}
+
+// SchemaSwitch holds data for emulating switch case over some field value
+type SchemaSwitch struct {
+	ByField string
+	Cases   map[string]interface{}
 }
 
 // Type represents a JSON Schema object type.
@@ -130,10 +136,7 @@ func (r *Reflector) ReflectFromType(t reflect.Type) *Schema {
 			Version:              Version,
 			Type:                 "object",
 			Properties:           map[string]*Type{},
-			AdditionalProperties: []byte("false"),
-		}
-		if r.AllowAdditionalProperties {
-			st.AdditionalProperties = []byte("true")
+			AdditionalProperties: bool2bytes(r.AllowAdditionalProperties),
 		}
 		r.reflectStructFields(st, definitions, t)
 		r.reflectStruct(definitions, t)
@@ -202,10 +205,15 @@ type ifThenElse interface {
 	IfThenElse() SchemaCondition
 }
 
+type schemaCase interface {
+	Case() SchemaSwitch
+}
+
 var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 var andOneOfType = reflect.TypeOf((*andOneOf)(nil)).Elem()
 var oneOfType = reflect.TypeOf((*oneOf)(nil)).Elem()
 var ifThenElseType = reflect.TypeOf((*ifThenElse)(nil)).Elem()
+var schemaCaseType = reflect.TypeOf((*schemaCase)(nil)).Elem()
 
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) (schema *Type) {
 	// Already added to definitions?
@@ -323,10 +331,7 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 	st := &Type{
 		Type:                 "object",
 		Properties:           map[string]*Type{},
-		AdditionalProperties: []byte("false"),
-	}
-	if r.AllowAdditionalProperties {
-		st.AdditionalProperties = []byte("true")
+		AdditionalProperties: bool2bytes(r.AllowAdditionalProperties),
 	}
 	packageName := getPackageNameFromPath(t.PkgPath())
 	definitions[packageName+"."+t.Name()] = st
@@ -346,19 +351,36 @@ func (r *Reflector) reflectCondition(definitions Definitions, sc SchemaCondition
 	conditionSchema := Type{}
 	conditionSchema.structKeywordsFromTags(r.getJSONSchemaTags(sc.If, nil))
 
-	condition := &Type{
+	t.If = &Type{
 		Properties: map[string]*Type{
 			sc.If.Tag.Get("json"): &conditionSchema,
 		},
 	}
 
-	t.If = condition
 	if reflect.TypeOf(sc.Then) != nil {
 		t.Then = r.reflectTypeToSchema(definitions, reflect.TypeOf(sc.Then))
 	}
 	if reflect.TypeOf(sc.Else) != nil {
 		t.Else = r.reflectTypeToSchema(definitions, reflect.TypeOf(sc.Else))
 	}
+}
+
+func (r *Reflector) reflectCases(definitions Definitions, sc SchemaSwitch) []*Type {
+	casesList := make([]*Type, 0)
+	for key, value := range sc.Cases {
+		t := &Type{}
+		t.If = &Type{
+			Properties: map[string]*Type{
+				sc.ByField: &Type{
+					Enum: []interface{}{key},
+				},
+			},
+		}
+		t.Then = r.reflectTypeToSchema(definitions, reflect.TypeOf(value))
+		t.Else = t.If
+		casesList = append(casesList, t)
+	}
+	return casesList
 }
 
 func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t reflect.Type) {
@@ -385,11 +407,16 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 			st.Required = append(st.Required, name)
 		}
 
-		// Append oneOf array to existing object type when AndOneOf() is implemented
-		if t.Implements(andOneOfType) {
-			s := reflect.New(t).Interface().(andOneOf).AndOneOf()
-			st.OneOf = r.getOneOfList(definitions, s)
-		}
+	}
+	// Append oneOf array to existing object type when AndOneOf() is implemented
+	if t.Implements(andOneOfType) {
+		s := reflect.New(t).Interface().(andOneOf).AndOneOf()
+		st.OneOf = r.getOneOfList(definitions, s)
+	}
+
+	if t.Implements(schemaCaseType) {
+		schemaSwitch := reflect.New(t).Interface().(schemaCase).Case()
+		st.OneOf = r.reflectCases(definitions, schemaSwitch)
 	}
 }
 
@@ -527,23 +554,7 @@ func (t *Type) floatKeywords(tags []string) {
 	}
 }
 
-// read struct tags for object type keyworks
-// func (t *Type) objectKeywords(tags []string) {
-//     for _, tag := range tags{
-//         nameValue := strings.Split(tag, "=")
-//         name, val := nameValue[0], nameValue[1]
-//         switch name{
-//             case "dependencies":
-//                 t.Dependencies = val
-//                 break;
-//             case "patternProperties":
-//                 t.PatternProperties = val
-//                 break;
-//         }
-//     }
-// }
-
-// read struct tags for array type keyworks
+// read struct tags for array type keywods
 func (t *Type) arrayKeywords(tags []string) {
 	for _, tag := range tags {
 		nameValue := strings.Split(tag, "=")
@@ -654,4 +665,12 @@ func (r *Reflector) getJSONSchemaTags(f reflect.StructField, t reflect.Type) []s
 func getPackageNameFromPath(path string) string {
 	pathSlices := strings.Split(path, "/")
 	return pathSlices[len(pathSlices)-1]
+}
+
+// bool2bytes serializes bool to JSON
+func bool2bytes(val bool) []byte {
+	if val {
+		return []byte("true")
+	}
+	return []byte("false")
 }

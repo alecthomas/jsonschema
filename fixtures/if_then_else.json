@@ -1,12 +1,12 @@
 {
   "$ref": "#/definitions/jsonschema.Application",
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "jsonschema.Application": {
       "additionalProperties": false,
       "else": {
         "$ref": "#/definitions/jsonschema.MobileApp",
-        "$schema": "http://json-schema.org/draft-04/schema#"
+        "$schema": "http://json-schema.org/draft-07/schema#"
       },
       "if": {
         "properties": {
@@ -23,7 +23,7 @@
       "required": ["type"],
       "then": {
         "$ref": "#/definitions/jsonschema.WebApp",
-        "$schema": "http://json-schema.org/draft-04/schema#"
+        "$schema": "http://json-schema.org/draft-07/schema#"
       },
       "type": "object"
     },

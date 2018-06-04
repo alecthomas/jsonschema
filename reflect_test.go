@@ -23,6 +23,7 @@ var schemaGenerationTests = []testSet{
 	{&Reflector{}, "fixtures/test_one_of_default.json", TestUserOneOf{}},
 	{&Reflector{}, "fixtures/test_package.json", TestUserPackage{}},
 	{&Reflector{}, "fixtures/if_then_else.json", Application{}},
+	{&Reflector{}, "fixtures/case.json", ExampleCase{}},
 }
 
 func TestSchemaGeneration(t *testing.T) {
@@ -72,6 +73,6 @@ func runTests(t *testing.T, tt testSet) {
 func sanitizeExpectedJson(expectedJSON []byte) []byte {
 	var js interface{}
 	json.Unmarshal(expectedJSON, &js)
-	clean, _ := json.Marshal(js)
+	clean, _ := json.MarshalIndent(js, "", "  ")
 	return clean
 }
