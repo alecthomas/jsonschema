@@ -44,6 +44,18 @@ const (
 	Great
 )
 
+type ABCEnumVal string
+
+func (ABCEnumVal) JSONSchemaEnums() []interface{} {
+	return []interface{}{"a", "b", "c"}
+}
+
+type DEFEnumPtr string
+
+func (*DEFEnumPtr) JSONSchemaEnums() []interface{} {
+	return []interface{}{"d", "e", "f"}
+}
+
 type TestUser struct {
 	SomeBaseType
 	nonExported
@@ -68,6 +80,11 @@ type TestUser struct {
 	Feeling ProtoEnum `json:"feeling,omitempty"`
 	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true"`
 	Email   string    `json:"email" jsonschema:"format=email"`
+
+	TestEnumVal    ABCEnumVal  `json:"test_enum_val,omitempty"`
+	TestEnumValPtr *ABCEnumVal `json:"test_enum_val_ptr,omitempty"`
+	TestEnumPtr    DEFEnumPtr  `json:"test_enum_ptr,omitempty"`
+	TestEnumPtrPtr *DEFEnumPtr `json:"test_enum_ptr_ptr,omitempty"`
 }
 
 var schemaGenerationTests = []struct {

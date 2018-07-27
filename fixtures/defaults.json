@@ -97,6 +97,34 @@
           },
           "type": "object"
         },
+        "test_enum_ptr": {
+          "enum": [
+            "d",
+            "e",
+            "f"
+          ]
+        },
+        "test_enum_ptr_ptr": {
+          "enum": [
+            "d",
+            "e",
+            "f"
+          ]
+        },
+        "test_enum_val": {
+          "enum": [
+            "a",
+            "b",
+            "c"
+          ]
+        },
+        "test_enum_val_ptr": {
+          "enum": [
+            "a",
+            "b",
+            "c"
+          ]
+        },
         "website": {
           "type": "string",
           "format": "uri"

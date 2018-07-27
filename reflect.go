@@ -155,6 +155,12 @@ type protoEnum interface {
 
 var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 
+type jsonSchemaEnums interface {
+	JSONSchemaEnums() []interface{}
+}
+
+var jsonSchemaEnumsType = reflect.TypeOf((*jsonSchemaEnums)(nil)).Elem()
+
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
 	if _, ok := definitions[t.Name()]; ok {
@@ -168,6 +174,18 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			{Type: "string"},
 			{Type: "integer"},
 		}}
+	}
+
+	if t.Implements(jsonSchemaEnumsType) ||
+		(t.Kind() != reflect.Ptr && reflect.PtrTo(t).Implements(jsonSchemaEnumsType)) {
+		if t.Kind() == reflect.Ptr {
+			return &Type{
+				Enum: reflect.New(t.Elem()).Interface().(jsonSchemaEnums).JSONSchemaEnums(),
+			}
+		}
+		return &Type{
+			Enum: reflect.New(t).Interface().(jsonSchemaEnums).JSONSchemaEnums(),
+		}
 	}
 
 	// Defined format types for JSON Schema Validation
