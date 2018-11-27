@@ -209,6 +209,14 @@ type schemaCase interface {
 	Case() SchemaSwitch
 }
 
+type minItems interface {
+	MinItems() int
+}
+
+type maxItems interface {
+	MaxItems() int
+}
+
 var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 var andOneOfType = reflect.TypeOf((*andOneOf)(nil)).Elem()
 var oneOfType = reflect.TypeOf((*oneOf)(nil)).Elem()
@@ -684,10 +692,3 @@ func bool2bytes(val bool) []byte {
 	return []byte("false")
 }
 
-type minItems interface {
-	MinItems() int
-}
-
-type maxItems interface {
-	MaxItems() int
-}
