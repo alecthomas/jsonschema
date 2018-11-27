@@ -691,4 +691,3 @@ func bool2bytes(val bool) []byte {
 	}
 	return []byte("false")
 }
-
