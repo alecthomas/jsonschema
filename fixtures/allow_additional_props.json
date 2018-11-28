@@ -50,7 +50,9 @@
           "items": {
             "type": "integer"
           },
-          "type": "array"
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
         },
         "grand": {
           "$ref": "#/definitions/jsonschema.GrandfatherType",

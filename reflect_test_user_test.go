@@ -69,3 +69,11 @@ type TestUser struct {
 	Sex               string  `json:"sex,omitempty" jsonschema:"enum=male|female|neither|whatever|other|not applicable"`
 	SecretFloatNumber float64 `json:"secret_float_number,omitempty" jsonschema:"enum=9.1|30.2|28.4|52.9"`
 }
+
+func (tu *TestUser) MinItems() int {
+	return 2
+}
+
+func (tu *TestUser) MaxItems() int {
+	return 2
+}

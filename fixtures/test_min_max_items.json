@@ -1,0 +1,23 @@
+{
+    "$ref": "#/definitions/jsonschema.SliceTestType",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+      "jsonschema.SliceTestType": {
+        "additionalProperties": false,
+        "properties": {
+          "testSlice": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "testSlice"
+        ],
+        "type": "object"
+      }
+    }
+}

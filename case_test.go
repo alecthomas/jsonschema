@@ -1,7 +1,7 @@
 package jsonschema
 
 type ExampleCase struct {
-	Type string `json:"type" jsonschema:"required;enum="int|string|bool"`
+	Type string `json:"type" jsonschema:"required;enum="bool|int|string"`
 }
 
 type IntPayload struct {
@@ -18,9 +18,9 @@ type BoolPayload struct {
 
 func (ex ExampleCase) Case() SchemaSwitch {
 	cases := make(map[string]interface{})
+	cases["bool"] = BoolPayload{}
 	cases["int"] = IntPayload{}
 	cases["string"] = StringPayload{}
-	cases["bool"] = BoolPayload{}
 
 	return SchemaSwitch{
 		ByField: "type",

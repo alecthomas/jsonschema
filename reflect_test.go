@@ -24,6 +24,7 @@ var schemaGenerationTests = []testSet{
 	{&Reflector{}, "fixtures/test_package.json", TestUserPackage{}},
 	{&Reflector{}, "fixtures/if_then_else.json", Application{}},
 	{&Reflector{}, "fixtures/case.json", ExampleCase{}},
+	{&Reflector{}, "fixtures/test_min_max_items.json", SliceTestType{}},
 }
 
 func TestSchemaGeneration(t *testing.T) {
