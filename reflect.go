@@ -99,6 +99,11 @@ type Reflector struct {
 	// ExpandedStruct will cause the toplevel definitions of the schema not
 	// be referenced itself to a definition.
 	ExpandedStruct bool
+
+	// Return field name and `required` flag
+	FieldNameReflector func(f reflect.StructField) (string, bool)
+	// For custom logic mapping
+	FieldReflector func(f reflect.StructField, t *Type)
 }
 
 // Reflect reflects to Schema from a value.
@@ -281,6 +286,9 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 		}
 		property := r.reflectTypeToSchema(definitions, f.Type)
 		property.structKeywordsFromTags(f)
+		if r.FieldReflector != nil {
+			r.FieldReflector(f, property)
+		}
 		st.Properties[name] = property
 		if required {
 			st.Required = append(st.Required, name)
@@ -423,6 +431,14 @@ func ignoredByJSONSchemaTags(tags []string) bool {
 }
 
 func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
+	if r.FieldNameReflector != nil {
+		return r.FieldNameReflector(f)
+	} else {
+		return defaultFieldNameReflector(f, r.RequiredFromJSONSchemaTags)
+	}
+}
+
+func defaultFieldNameReflector(f reflect.StructField, isRequiredFromJSONSchemaTags bool) (string, bool) {
 	if f.PkgPath != "" { // unexported field, ignore it
 		return "", false
 	}
@@ -441,7 +457,7 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 	name := f.Name
 	required := requiredFromJSONTags(jsonTags)
 
-	if r.RequiredFromJSONSchemaTags {
+	if isRequiredFromJSONSchemaTags {
 		required = requiredFromJSONSchemaTags(jsonSchemaTags)
 	}
 
