@@ -427,9 +427,14 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 		return "", false
 	}
 
-	jsonTags := strings.Split(f.Tag.Get("json"), ",")
+	jsonTags, exist := f.Tag.Lookup("json")
+	if !exist {
+		jsonTags = f.Tag.Get("yaml")
+	}
 
-	if ignoredByJSONTags(jsonTags) {
+	jsonTagsList := strings.Split(jsonTags, ",")
+
+	if ignoredByJSONTags(jsonTagsList) {
 		return "", false
 	}
 
@@ -439,14 +444,14 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 	}
 
 	name := f.Name
-	required := requiredFromJSONTags(jsonTags)
+	required := requiredFromJSONTags(jsonTagsList)
 
 	if r.RequiredFromJSONSchemaTags {
 		required = requiredFromJSONSchemaTags(jsonSchemaTags)
 	}
 
-	if jsonTags[0] != "" {
-		name = jsonTags[0]
+	if jsonTagsList[0] != "" {
+		name = jsonTagsList[0]
 	}
 
 	return name, required

@@ -84,6 +84,9 @@
         "some_base_property": {
           "type": "integer"
         },
+        "some_base_property_yaml": {
+          "type": "integer"
+        },
         "tags": {
           "patternProperties": {
             ".*": {
