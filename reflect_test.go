@@ -50,7 +50,7 @@ type TestUser struct {
 	nonExported
 
 	ID      int                    `json:"id" jsonschema:"required"`
-	Name    string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20"`
+	Name    string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20,pattern=.*"`
 	Friends []int                  `json:"friends,omitempty"`
 	Tags    map[string]interface{} `json:"tags,omitempty"`
 

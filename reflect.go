@@ -315,6 +315,8 @@ func (t *Type) stringKeywords(tags []string) {
 			case "maxLength":
 				i, _ := strconv.Atoi(val)
 				t.MaxLength = i
+			case "pattern":
+				t.Pattern = val
 			case "format":
 				switch val {
 				case "date-time", "email", "hostname", "ipv4", "ipv6", "uri":
