@@ -224,10 +224,11 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		}
 
 	case reflect.Interface:
-		return &Type{
+		/*return &Type{
 			Type:                 "object",
 			AdditionalProperties: []byte("true"),
-		}
+		}*/
+		return &Type{}
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
