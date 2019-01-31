@@ -17,7 +17,8 @@ type GrandfatherType struct {
 }
 
 type SomeBaseType struct {
-	SomeBaseProperty int `json:"some_base_property"`
+	SomeBaseProperty     int `json:"some_base_property"`
+	SomeBasePropertyYaml int `yaml:"some_base_property_yaml"`
 	// The jsonschema required tag is nonsensical for private and ignored properties.
 	// Their presence here tests that the fields *will not* be required in the output
 	// schema, even if they are tagged required.
@@ -49,7 +50,7 @@ type TestUser struct {
 	nonExported
 
 	ID      int                    `json:"id" jsonschema:"required"`
-	Name    string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20"`
+	Name    string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20,pattern=.*"`
 	Friends []int                  `json:"friends,omitempty"`
 	Tags    map[string]interface{} `json:"tags,omitempty"`
 

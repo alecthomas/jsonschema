@@ -323,6 +323,8 @@ func (t *Type) stringKeywords(tags []string) {
 			case "maxLength":
 				i, _ := strconv.Atoi(val)
 				t.MaxLength = i
+			case "pattern":
+				t.Pattern = val
 			case "format":
 				switch val {
 				case "date-time", "email", "hostname", "ipv4", "ipv6", "uri":
@@ -443,9 +445,14 @@ func defaultFieldNameReflector(f reflect.StructField, isRequiredFromJSONSchemaTa
 		return "", false
 	}
 
-	jsonTags := strings.Split(f.Tag.Get("json"), ",")
+	jsonTags, exist := f.Tag.Lookup("json")
+	if !exist {
+		jsonTags = f.Tag.Get("yaml")
+	}
 
-	if ignoredByJSONTags(jsonTags) {
+	jsonTagsList := strings.Split(jsonTags, ",")
+
+	if ignoredByJSONTags(jsonTagsList) {
 		return "", false
 	}
 
@@ -455,14 +462,14 @@ func defaultFieldNameReflector(f reflect.StructField, isRequiredFromJSONSchemaTa
 	}
 
 	name := f.Name
-	required := requiredFromJSONTags(jsonTags)
+	required := requiredFromJSONTags(jsonTagsList)
 
 	if isRequiredFromJSONSchemaTags {
 		required = requiredFromJSONSchemaTags(jsonSchemaTags)
 	}
 
-	if jsonTags[0] != "" {
-		name = jsonTags[0]
+	if jsonTagsList[0] != "" {
+		name = jsonTagsList[0]
 	}
 
 	return name, required

@@ -2,6 +2,7 @@
   "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
   "required": [
     "some_base_property",
+    "some_base_property_yaml",
     "grand",
     "SomeUntaggedBaseProperty",
     "id",
@@ -58,7 +59,8 @@
     "name": {
         "type": "string",
         "maxLength": 20,
-        "minLength": 1
+        "minLength": 1,
+        "pattern": ".*"
     },
     "network_address": {
       "type": "string",
@@ -71,6 +73,9 @@
       }
     },
     "some_base_property": {
+      "type": "integer"
+    },
+    "some_base_property_yaml": {
       "type": "integer"
     },
     "tags": {
