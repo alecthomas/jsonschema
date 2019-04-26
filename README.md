@@ -16,8 +16,8 @@ The following Go type:
 ```go
 type TestUser struct {
   ID        int                    `json:"id"`
-  Name      string                 `json:"name"`
-  Friends   []int                  `json:"friends,omitempty"`
+  Name      string                 `json:"name" jsonschema="title=the name,description=The name of a friend,example=joe,example=lucy,default=alex"`
+  Friends   []int                  `json:"friends,omitempty" jsonschema_description:"The list of IDs, omitted when empty"`
   Tags      map[string]interface{} `json:"tags,omitempty"`
   BirthDate time.Time              `json:"birth_date,omitempty"`
 }
@@ -45,13 +45,21 @@ jsonschema.Reflect(&TestUser{})
           "type": "array",
           "items": {
             "type": "integer"
-          }
+          },
+          "description": "The list of IDs, omitted when empty"
         },
         "id": {
           "type": "integer"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "title": "the name",
+          "description": "The name of a friend",
+          "default": "alex",
+          "examples": [
+            "joe",
+            "lucy"
+          ]
         },
         "tags": {
           "type": "object",

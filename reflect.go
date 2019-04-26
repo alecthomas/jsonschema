@@ -62,10 +62,11 @@ type Type struct {
 	Not                  *Type            `json:"not,omitempty"`                  // section 5.25
 	Definitions          Definitions      `json:"definitions,omitempty"`          // section 5.26
 	// RFC draft-wright-json-schema-validation-00, section 6, 7
-	Title       string      `json:"title,omitempty"`       // section 6.1
-	Description string      `json:"description,omitempty"` // section 6.1
-	Default     interface{} `json:"default,omitempty"`     // section 6.2
-	Format      string      `json:"format,omitempty"`      // section 7
+	Title       string        `json:"title,omitempty"`       // section 6.1
+	Description string        `json:"description,omitempty"` // section 6.1
+	Default     interface{}   `json:"default,omitempty"`     // section 6.2
+	Format      string        `json:"format,omitempty"`      // section 7
+	Examples    []interface{} `json:"examples,omitempty"`    // section 7.4
 	// RFC draft-wright-json-schema-hyperschema-00, section 4
 	Media          *Type  `json:"media,omitempty"`          // section 4.3
 	BinaryEncoding string `json:"binaryEncoding,omitempty"` // section 4.3
@@ -289,7 +290,9 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 }
 
 func (t *Type) structKeywordsFromTags(f reflect.StructField) {
+	t.Description = f.Tag.Get("jsonschema_description")
 	tags := strings.Split(f.Tag.Get("jsonschema"), ",")
+	t.genericKeywords(tags)
 	switch t.Type {
 	case "string":
 		t.stringKeywords(tags)
@@ -299,6 +302,22 @@ func (t *Type) structKeywordsFromTags(f reflect.StructField) {
 		t.numbericKeywords(tags)
 	case "array":
 		t.arrayKeywords(tags)
+	}
+}
+
+// read struct tags for generic keyworks
+func (t *Type) genericKeywords(tags []string) {
+	for _, tag := range tags {
+		nameValue := strings.Split(tag, "=")
+		if len(nameValue) == 2 {
+			name, val := nameValue[0], nameValue[1]
+			switch name {
+			case "title":
+				t.Title = val
+			case "description":
+				t.Description = val
+			}
+		}
 	}
 }
 
@@ -323,6 +342,10 @@ func (t *Type) stringKeywords(tags []string) {
 					t.Format = val
 					break
 				}
+			case "default":
+				t.Default = val
+			case "example":
+				t.Examples = append(t.Examples, val)
 			}
 		}
 	}
@@ -350,6 +373,13 @@ func (t *Type) numbericKeywords(tags []string) {
 			case "exclusiveMinimum":
 				b, _ := strconv.ParseBool(val)
 				t.ExclusiveMinimum = b
+			case "default":
+				i, _ := strconv.Atoi(val)
+				t.Default = i
+			case "example":
+				if i, err := strconv.Atoi(val); err == nil {
+					t.Examples = append(t.Examples, i)
+				}
 			}
 		}
 	}
@@ -373,6 +403,7 @@ func (t *Type) numbericKeywords(tags []string) {
 
 // read struct tags for array type keyworks
 func (t *Type) arrayKeywords(tags []string) {
+	var defaultValues []interface{}
 	for _, tag := range tags {
 		nameValue := strings.Split(tag, "=")
 		if len(nameValue) == 2 {
@@ -386,8 +417,13 @@ func (t *Type) arrayKeywords(tags []string) {
 				t.MaxItems = i
 			case "uniqueItems":
 				t.UniqueItems = true
+			case "default":
+				defaultValues = append(defaultValues, val)
 			}
 		}
+	}
+	if len(defaultValues) > 0 {
+		t.Default = defaultValues
 	}
 }
 

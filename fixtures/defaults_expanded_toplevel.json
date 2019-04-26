@@ -24,7 +24,7 @@
       "exclusiveMaximum": true,
       "exclusiveMinimum": true,
       "type": "integer"
-    },  
+    },
     "email": {
       "type": "string",
       "format": "email"
@@ -47,7 +47,8 @@
       "items": {
         "type": "integer"
       },
-      "type": "array"
+      "type": "array",
+      "description": "list of IDs, omitted when empty"
     },
     "grand": {
       "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
@@ -60,7 +61,14 @@
         "type": "string",
         "maxLength": 20,
         "minLength": 1,
-        "pattern": ".*"
+        "pattern": ".*",
+        "title": "the name",
+        "description": "this is a property",
+        "default": "alex",
+        "examples": [
+          "joe",
+          "lucy"
+        ]
     },
     "network_address": {
       "type": "string",
