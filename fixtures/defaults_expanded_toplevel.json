@@ -13,7 +13,12 @@
   ],
   "properties": {
     "SomeUntaggedBaseProperty": {
-      "type": "boolean"
+      "type": "boolean",
+      "default": false,
+      "examples": [
+        true,
+        "OK"
+      ]
     },
     "TestFlag": {
       "type": "boolean"

@@ -29,7 +29,7 @@ type SomeBaseType struct {
 	SomeSchemaIgnoredProperty string          `jsonschema:"-,required"`
 	Grandfather               GrandfatherType `json:"grand"`
 
-	SomeUntaggedBaseProperty           bool `jsonschema:"required"`
+	SomeUntaggedBaseProperty           bool `jsonschema:"required,example=true,example=OK,default=false"`
 	someUnexportedUntaggedBaseProperty bool
 }
 

@@ -103,6 +103,40 @@ type Reflector struct {
 	ExpandedStruct bool
 }
 
+// Opaque value type used for Default and Examples. Carries the raw JSON value of those fields.
+type value string
+
+// It is RECOMMENDED that these values be valid
+// against the associated schema.
+func (v *value) MarshalJSON() (text []byte, err error) {
+	return []byte(string(*v)), nil
+}
+
+// UnmarshalJSON for roundtrip -
+func (v *value) UnmarshalJSON(b []byte) error {
+	str := string(b)
+	*v = value(str)
+	return nil
+}
+
+func makeValue(val string, t *Type) value {
+	if t.Type == "integer" {
+		if i, err := strconv.Atoi(val); err == nil {
+			return value(fmt.Sprintf("%d", i))
+		}
+	} else if t.Type == "number" {
+		if j, err := strconv.ParseFloat(val, 64); err == nil {
+			return value(fmt.Sprintf("%f", j))
+		}
+	} else if t.Type == "boolean" {
+		if k, err := strconv.ParseBool(val); err == nil {
+			return value(fmt.Sprintf("%t", k))
+		}
+	}
+	marshalled, _ := json.Marshal(val)
+	return value(string(marshalled))
+}
+
 // Reflect reflects to Schema from a value.
 func (r *Reflector) Reflect(v interface{}) *Schema {
 	return r.ReflectFromType(reflect.TypeOf(v))
@@ -303,6 +337,8 @@ func (t *Type) structKeywordsFromTags(f reflect.StructField) {
 		t.numbericKeywords(tags)
 	case "array":
 		t.arrayKeywords(tags)
+	case "boolean":
+		t.booleanKeywords(tags)
 	}
 }
 
@@ -383,36 +419,6 @@ func (t *Type) numbericKeywords(tags []string) {
 	}
 }
 
-// Opaque value type used for Default and Examples. Carries the raw JSON value of those fields.
-type value string
-
-// It is RECOMMENDED that these values be valid
-// against the associated schema.
-func (v *value) MarshalJSON() (text []byte, err error) {
-	return []byte(string(*v)), nil
-}
-
-// UnmarshalJSON for roundtrip -
-func (v *value) UnmarshalJSON(b []byte) error {
-	str := string(b)
-	*v = value(str)
-	return nil
-}
-
-func makeValue(val string, t *Type) value {
-	if t.Type == "integer" {
-		if i, err := strconv.Atoi(val); err == nil {
-			return value(fmt.Sprintf("%d", i))
-		}
-	} else if t.Type == "number" {
-		if j, err := strconv.ParseFloat(val, 64); err == nil {
-			return value(fmt.Sprintf("%f", j))
-		}
-	}
-	marshalled, _ := json.Marshal(val)
-	return value(string(marshalled))
-}
-
 // read struct tags for object type keyworks
 // func (t *Type) objectKeywords(tags []string) {
 //     for _, tag := range tags{
@@ -462,6 +468,22 @@ func (t *Type) arrayKeywords(tags []string) {
 			return
 		}
 		t.Default = value(string(marshalled))
+	}
+}
+
+// read struct tags for array type keyworks
+func (t *Type) booleanKeywords(tags []string) {
+	for _, tag := range tags {
+		nameValue := strings.Split(tag, "=")
+		if len(nameValue) == 2 {
+			name, val := nameValue[0], nameValue[1]
+			switch name {
+			case "default":
+				t.Default = makeValue(val, t)
+			case "example":
+				t.Examples = append(t.Examples, makeValue(val, t))
+			}
+		}
 	}
 }
 
