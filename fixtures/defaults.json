@@ -1,6 +1,6 @@
 {
-  "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
-  "$ref": "#\/definitions\/TestUser",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/TestUser",
   "definitions": {
     "GrandfatherType": {
       "required": [
@@ -33,20 +33,25 @@
         "TestFlag": {
           "type": "boolean"
         },
-        "age":{
+        "age": {
           "maximum": 120,
-          "minimum": 18,
           "exclusiveMaximum": true,
+          "minimum": 18,
           "exclusiveMinimum": true,
-          "type": "integer"
-        },
-        "email": {
-          "type": "string",
-          "format": "email"
+          "type": "integer",
+          "default": "1or2",
+          "examples": [
+            3,
+            "four"
+          ]
         },
         "birth_date": {
           "type": "string",
           "format": "date-time"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
         },
         "feeling": {
           "oneOf": [
@@ -66,8 +71,8 @@
           "description": "list of IDs, omitted when empty"
         },
         "grand": {
-          "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
-          "$ref": "#\/definitions\/GrandfatherType"
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/GrandfatherType"
         },
         "id": {
           "type": "integer"

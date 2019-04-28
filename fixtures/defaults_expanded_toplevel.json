@@ -23,7 +23,12 @@
       "minimum": 18,
       "exclusiveMaximum": true,
       "exclusiveMinimum": true,
-      "type": "integer"
+      "type": "integer",
+      "default": "1or2",
+      "examples": [
+        3,
+        "four"
+      ]
     },
     "email": {
       "type": "string",
@@ -51,8 +56,8 @@
       "description": "list of IDs, omitted when empty"
     },
     "grand": {
-      "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
-      "$ref": "#\/definitions\/GrandfatherType"
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "$ref": "#/definitions/GrandfatherType"
     },
     "id": {
       "type": "integer"

@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/go-test/deep"
 )
 
 type GrandfatherType struct {
@@ -65,9 +67,9 @@ type TestUser struct {
 	// Tests for RFC draft-wright-json-schema-hyperschema-00, section 4
 	Photo []byte `json:"photo,omitempty" jsonschema:"required"`
 
-	// Tests for jsonpb enum support
+	// Tests for jsonpb enum support and a default value that is not valid
 	Feeling ProtoEnum `json:"feeling,omitempty"`
-	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true"`
+	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true,default=1or2,example=3,example=four"`
 	Email   string    `json:"email" jsonschema:"format=email"`
 }
 
@@ -105,7 +107,7 @@ func TestSchemaGeneration(t *testing.T) {
 					t.Errorf("json.MarshalIndent(%v, \"\", \"  \"): %v", actualSchema, err)
 					return
 				}
-				t.Errorf("reflector %+v wanted schema %s, got %s", tt.reflector, f, actualJSON)
+				t.Errorf("unexpected diff: %+v\nreflector %+v wanted schema %s, got %s", deep.Equal(expectedSchema, actualSchema), tt.reflector, f, actualJSON)
 			}
 		})
 	}

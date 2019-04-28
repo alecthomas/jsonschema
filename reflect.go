@@ -8,6 +8,7 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/url"
 	"reflect"
@@ -62,11 +63,11 @@ type Type struct {
 	Not                  *Type            `json:"not,omitempty"`                  // section 5.25
 	Definitions          Definitions      `json:"definitions,omitempty"`          // section 5.26
 	// RFC draft-wright-json-schema-validation-00, section 6, 7
-	Title       string        `json:"title,omitempty"`       // section 6.1
-	Description string        `json:"description,omitempty"` // section 6.1
-	Default     interface{}   `json:"default,omitempty"`     // section 6.2
-	Format      string        `json:"format,omitempty"`      // section 7
-	Examples    []interface{} `json:"examples,omitempty"`    // section 7.4
+	Title       string  `json:"title,omitempty"`       // section 6.1
+	Description string  `json:"description,omitempty"` // section 6.1
+	Default     value   `json:"default,omitempty"`     // section 6.2
+	Format      string  `json:"format,omitempty"`      // section 7
+	Examples    []value `json:"examples,omitempty"`    // section 7.4
 	// RFC draft-wright-json-schema-hyperschema-00, section 4
 	Media          *Type  `json:"media,omitempty"`          // section 4.3
 	BinaryEncoding string `json:"binaryEncoding,omitempty"` // section 4.3
@@ -343,9 +344,9 @@ func (t *Type) stringKeywords(tags []string) {
 					break
 				}
 			case "default":
-				t.Default = val
+				t.Default = makeValue(val, t)
 			case "example":
-				t.Examples = append(t.Examples, val)
+				t.Examples = append(t.Examples, makeValue(val, t))
 			}
 		}
 	}
@@ -374,15 +375,42 @@ func (t *Type) numbericKeywords(tags []string) {
 				b, _ := strconv.ParseBool(val)
 				t.ExclusiveMinimum = b
 			case "default":
-				i, _ := strconv.Atoi(val)
-				t.Default = i
+				t.Default = makeValue(val, t)
 			case "example":
-				if i, err := strconv.Atoi(val); err == nil {
-					t.Examples = append(t.Examples, i)
-				}
+				t.Examples = append(t.Examples, makeValue(val, t))
 			}
 		}
 	}
+}
+
+// Opaque value type used for Default and Examples. Carries the raw JSON value of those fields.
+type value string
+
+// It is RECOMMENDED that these values be valid
+// against the associated schema.
+func (v *value) MarshalJSON() (text []byte, err error) {
+	return []byte(string(*v)), nil
+}
+
+// UnmarshalJSON for roundtrip -
+func (v *value) UnmarshalJSON(b []byte) error {
+	str := string(b)
+	*v = value(str)
+	return nil
+}
+
+func makeValue(val string, t *Type) value {
+	if t.Type == "integer" {
+		if i, err := strconv.Atoi(val); err == nil {
+			return value(fmt.Sprintf("%d", i))
+		}
+	} else if t.Type == "number" {
+		if j, err := strconv.ParseFloat(val, 64); err == nil {
+			return value(fmt.Sprintf("%f", j))
+		}
+	}
+	marshalled, _ := json.Marshal(val)
+	return value(string(marshalled))
 }
 
 // read struct tags for object type keyworks
@@ -403,7 +431,7 @@ func (t *Type) numbericKeywords(tags []string) {
 
 // read struct tags for array type keyworks
 func (t *Type) arrayKeywords(tags []string) {
-	var defaultValues []interface{}
+	var defaultValues []value
 	for _, tag := range tags {
 		nameValue := strings.Split(tag, "=")
 		if len(nameValue) == 2 {
@@ -418,12 +446,22 @@ func (t *Type) arrayKeywords(tags []string) {
 			case "uniqueItems":
 				t.UniqueItems = true
 			case "default":
-				defaultValues = append(defaultValues, val)
+				defaultValues = append(defaultValues, makeValue(val, t.Items))
 			}
 		}
 	}
 	if len(defaultValues) > 0 {
-		t.Default = defaultValues
+		marshalled, err := json.Marshal(defaultValues)
+		if err != nil {
+			fmt.Println("WARN: Could not marshall the array of examples", err)
+			return
+		}
+		marshalled, err = json.Marshal(marshalled)
+		if err != nil {
+			fmt.Println("WARN: Could not marshall the string of array of examples", err)
+			return
+		}
+		t.Default = value(string(marshalled))
 	}
 }
 
