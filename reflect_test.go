@@ -31,6 +31,8 @@ type SomeBaseType struct {
 	someUnexportedUntaggedBaseProperty bool
 }
 
+type MapType map[string]interface{}
+
 type nonExported struct {
 	PublicNonExported  int
 	privateNonExported int
@@ -48,6 +50,7 @@ const (
 type TestUser struct {
 	SomeBaseType
 	nonExported
+	MapType
 
 	ID      int                    `json:"id" jsonschema:"required"`
 	Name    string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20,pattern=.*,description=this is a property,title=the name,example=joe,example=lucy,default=alex"`

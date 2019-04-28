@@ -267,6 +267,9 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
+	if t.Kind() != reflect.Struct {
+		return
+	}
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 		// anonymous and exported type should be processed recursively
