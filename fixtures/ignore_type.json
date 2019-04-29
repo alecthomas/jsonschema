@@ -15,18 +15,9 @@
       "type": "object"
     },
     "StructWithUnnamedString": {
-      "required": [
-        "SomeString"
-      ],
       "properties": {
-        "SomeString": {
-          "type": "string"
-        },
-        "something": {
-          "type": "string"
-        }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "type": "object"
     },
     "TestUser": {
@@ -81,8 +72,7 @@
           "items": {
             "type": "integer"
           },
-          "type": "array",
-          "description": "list of IDs, omitted when empty"
+          "type": "array"
         },
         "grand": {
           "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
@@ -95,14 +85,7 @@
           "type": "string",
           "maxLength": 20,
           "minLength": 1,
-          "pattern": ".*",
-          "title": "the name",
-          "description": "this is a property",
-          "default": "alex",
-          "examples": [
-            "joe",
-            "lucy"
-          ]
+          "pattern": ".*"
         },
         "network_address": {
           "type": "string",

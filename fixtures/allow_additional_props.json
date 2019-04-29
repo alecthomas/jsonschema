@@ -14,6 +14,21 @@
       "additionalProperties": true,
       "type": "object"
     },
+    "StructWithUnnamedString": {
+      "required": [
+        "SomeString"
+      ],
+      "properties": {
+        "SomeString": {
+          "type": "string"
+        },
+        "something": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "type": "object"
+    },
     "TestUser": {
       "required": [
         "some_base_property",
@@ -39,6 +54,10 @@
           "exclusiveMaximum": true,
           "exclusiveMinimum": true,
           "type": "integer"
+        },
+        "badstruct": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/StructWithUnnamedString"
         },
         "email": {
           "type": "string",

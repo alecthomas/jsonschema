@@ -72,6 +72,17 @@ type TestUser struct {
 	Feeling ProtoEnum `json:"feeling,omitempty"`
 	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true"`
 	Email   string    `json:"email" jsonschema:"format=email"`
+
+	// Test for a struct with an unnamed field.
+	BadStruct StructWithUnnamedString `json:"badstruct,omitempty"`
+}
+
+type SomeString string
+
+type StructWithUnnamedString struct {
+	Something string `json:"something,omitempty"`
+
+	SomeString
 }
 
 var schemaGenerationTests = []struct {
@@ -82,6 +93,7 @@ var schemaGenerationTests = []struct {
 	{&Reflector{AllowAdditionalProperties: true}, "fixtures/allow_additional_props.json"},
 	{&Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/required_from_jsontags.json"},
 	{&Reflector{ExpandedStruct: true}, "fixtures/defaults_expanded_toplevel.json"},
+	{&Reflector{IgnoredTypes: []interface{}{StructWithUnnamedString{}}}, "fixtures/ignore_type.json"},
 }
 
 func TestSchemaGeneration(t *testing.T) {
