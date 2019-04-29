@@ -35,6 +35,7 @@
         "some_base_property_yaml",
         "grand",
         "SomeUntaggedBaseProperty",
+        "MapType",
         "id",
         "name",
         "TestFlag",
@@ -42,6 +43,15 @@
         "email"
       ],
       "properties": {
+        "MapType": {
+          "patternProperties": {
+            ".*": {
+              "additionalProperties": true,
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
         "SomeUntaggedBaseProperty": {
           "type": "boolean"
         },

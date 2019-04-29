@@ -1,6 +1,6 @@
 {
-  "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
-  "$ref": "#\/definitions\/TestUser",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/TestUser",
   "definitions": {
     "GrandfatherType": {
       "required": [
@@ -26,6 +26,7 @@
         "some_base_property_yaml",
         "grand",
         "SomeUntaggedBaseProperty",
+        "MapType",
         "id",
         "name",
         "TestFlag",
@@ -33,16 +34,25 @@
         "email"
       ],
       "properties": {
+        "MapType": {
+          "patternProperties": {
+            ".*": {
+              "additionalProperties": true,
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
         "SomeUntaggedBaseProperty": {
           "type": "boolean"
         },
         "TestFlag": {
           "type": "boolean"
         },
-        "age":{
+        "age": {
           "maximum": 120,
-          "minimum": 18,
           "exclusiveMaximum": true,
+          "minimum": 18,
           "exclusiveMinimum": true,
           "type": "integer"
         },
@@ -50,13 +60,13 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/StructWithUnnamedString"
         },
-        "email": {
-          "type": "string",
-          "format": "email"
-        },
         "birth_date": {
           "type": "string",
           "format": "date-time"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
         },
         "feeling": {
           "oneOf": [
@@ -72,20 +82,28 @@
           "items": {
             "type": "integer"
           },
-          "type": "array"
+          "type": "array",
+          "description": "list of IDs, omitted when empty"
         },
         "grand": {
-          "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
-          "$ref": "#\/definitions\/GrandfatherType"
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/GrandfatherType"
         },
         "id": {
           "type": "integer"
         },
         "name": {
-          "type": "string",
           "maxLength": 20,
           "minLength": 1,
-          "pattern": ".*"
+          "pattern": ".*",
+          "type": "string",
+          "title": "the name",
+          "description": "this is a property",
+          "default": "alex",
+          "examples": [
+            "joe",
+            "lucy"
+          ]
         },
         "network_address": {
           "type": "string",

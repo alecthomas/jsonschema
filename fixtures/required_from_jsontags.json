@@ -34,6 +34,15 @@
         "photo"
       ],
       "properties": {
+        "MapType": {
+          "patternProperties": {
+            ".*": {
+              "additionalProperties": true,
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
         "SomeUntaggedBaseProperty": {
           "type": "boolean"
         },
