@@ -292,17 +292,16 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 	}
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
-		// anonymous and exported type should be processed recursively
+		name, exist, required := r.reflectFieldName(f)
+		// if anonymous and exported type should be processed recursively
 		// current type should inherit properties of anonymous one
-		if f.Anonymous && f.PkgPath == "" {
-			r.reflectStructFields(st, definitions, f.Type)
+		if name == "" {
+			if f.Anonymous && !exist {
+				r.reflectStructFields(st, definitions, f.Type)
+			}
 			continue
 		}
 
-		name, required := r.reflectFieldName(f)
-		if name == "" {
-			continue
-		}
 		property := r.reflectTypeToSchema(definitions, f.Type)
 		property.structKeywordsFromTags(f)
 		st.Properties[name] = property
@@ -483,11 +482,7 @@ func ignoredByJSONSchemaTags(tags []string) bool {
 	return tags[0] == "-"
 }
 
-func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
-	if f.PkgPath != "" { // unexported field, ignore it
-		return "", false
-	}
-
+func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool) {
 	jsonTags, exist := f.Tag.Lookup("json")
 	if !exist {
 		jsonTags = f.Tag.Get("yaml")
@@ -496,12 +491,12 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 	jsonTagsList := strings.Split(jsonTags, ",")
 
 	if ignoredByJSONTags(jsonTagsList) {
-		return "", false
+		return "", exist, false
 	}
 
 	jsonSchemaTags := strings.Split(f.Tag.Get("jsonschema"), ",")
 	if ignoredByJSONSchemaTags(jsonSchemaTags) {
-		return "", false
+		return "", exist, false
 	}
 
 	name := f.Name
@@ -515,5 +510,15 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool) {
 		name = jsonTagsList[0]
 	}
 
-	return name, required
+	// field not anonymous and not export has no export name
+	if !f.Anonymous && f.PkgPath != "" {
+		name = ""
+	}
+
+	// field anonymous but without json tag should be inherited by current type
+	if f.Anonymous && !exist {
+		name = ""
+	}
+
+	return name, exist, required
 }
