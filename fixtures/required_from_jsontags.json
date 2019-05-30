@@ -22,6 +22,9 @@
         "photo"
       ],
       "properties": {
+        "PublicNonExported": {
+          "type": "integer"
+        },
         "SomeUntaggedBaseProperty": {
           "type": "boolean"
         },
