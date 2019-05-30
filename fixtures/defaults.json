@@ -20,6 +20,7 @@
         "some_base_property_yaml",
         "grand",
         "SomeUntaggedBaseProperty",
+        "PublicNonExported",
         "id",
         "name",
         "TestFlag",
@@ -27,13 +28,16 @@
         "email"
       ],
       "properties": {
+        "PublicNonExported": {
+          "type": "integer"
+        },
         "SomeUntaggedBaseProperty": {
           "type": "boolean"
         },
         "TestFlag": {
           "type": "boolean"
         },
-        "age":{
+        "age": {
           "maximum": 120,
           "minimum": 18,
           "exclusiveMaximum": true,
