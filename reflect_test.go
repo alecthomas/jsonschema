@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 type GrandfatherType struct {
@@ -74,43 +76,51 @@ type TestUser struct {
 	Email   string    `json:"email" jsonschema:"format=email"`
 }
 
-var schemaGenerationTests = []struct {
-	reflector *Reflector
-	fixture   string
-}{
-	{&Reflector{}, "fixtures/defaults.json"},
-	{&Reflector{AllowAdditionalProperties: true}, "fixtures/allow_additional_props.json"},
-	{&Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/required_from_jsontags.json"},
-	{&Reflector{ExpandedStruct: true}, "fixtures/defaults_expanded_toplevel.json"},
-	{&Reflector{IgnoredTypes: []interface{}{GrandfatherType{}}}, "fixtures/ignore_type.json"},
+type CustomTime time.Time
+
+type CustomTypeField struct {
+	CreatedAt CustomTime
 }
 
 func TestSchemaGeneration(t *testing.T) {
-	for _, tt := range schemaGenerationTests {
+	tests := []struct {
+		typ       interface{}
+		reflector *Reflector
+		fixture   string
+	}{
+		{&TestUser{}, &Reflector{}, "fixtures/defaults.json"},
+		{&TestUser{}, &Reflector{AllowAdditionalProperties: true}, "fixtures/allow_additional_props.json"},
+		{&TestUser{}, &Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/required_from_jsontags.json"},
+		{&TestUser{}, &Reflector{ExpandedStruct: true}, "fixtures/defaults_expanded_toplevel.json"},
+		{&TestUser{}, &Reflector{IgnoredTypes: []interface{}{GrandfatherType{}}}, "fixtures/ignore_type.json"},
+		{&CustomTypeField{}, &Reflector{
+			TypeMapper: func(i reflect.Type) *Type {
+				if i == reflect.TypeOf(CustomTime{}) {
+					return &Type{
+						Type:   "string",
+						Format: "date-time",
+					}
+				}
+				return nil
+			},
+		}, "fixtures/custom_type.json"},
+	}
+
+	for _, tt := range tests {
 		name := strings.TrimSuffix(filepath.Base(tt.fixture), ".json")
 		t.Run(name, func(t *testing.T) {
 			f, err := ioutil.ReadFile(tt.fixture)
-			if err != nil {
-				t.Errorf("ioutil.ReadAll(%s): %s", tt.fixture, err)
-				return
-			}
+			require.NoError(t, err)
 
-			actualSchema := tt.reflector.Reflect(&TestUser{})
+			actualSchema := tt.reflector.Reflect(tt.typ)
 			expectedSchema := &Schema{}
 
-			if err := json.Unmarshal(f, expectedSchema); err != nil {
-				t.Errorf("json.Unmarshal(%s, %v): %s", tt.fixture, expectedSchema, err)
-				return
-			}
+			err = json.Unmarshal(f, expectedSchema)
+			require.NoError(t, err)
 
-			if !reflect.DeepEqual(actualSchema, expectedSchema) {
-				actualJSON, err := json.MarshalIndent(actualSchema, "", "  ")
-				if err != nil {
-					t.Errorf("json.MarshalIndent(%v, \"\", \"  \"): %v", actualSchema, err)
-					return
-				}
-				t.Errorf("reflector %+v wanted schema %s, got %s", tt.reflector, f, actualJSON)
-			}
+			expectedJSON, _ := json.MarshalIndent(expectedSchema, "", "  ")
+			actualJSON, _ := json.MarshalIndent(actualSchema, "", "  ")
+			require.Equal(t, string(expectedJSON), string(actualJSON))
 		})
 	}
 }

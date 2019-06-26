@@ -104,6 +104,9 @@ type Reflector struct {
 	// IgnoredTypes defines a slice of types that should be ignored in the schema,
 	// switching to just allowing additional properties instead.
 	IgnoredTypes []interface{}
+
+	// TypeMapper is a function that can be used to map custom Go types to jsconschema types.
+	TypeMapper func(reflect.Type) *Type
 }
 
 // Reflect reflects to Schema from a value.
@@ -173,6 +176,12 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			{Type: "string"},
 			{Type: "integer"},
 		}}
+	}
+
+	if r.TypeMapper != nil {
+		if t := r.TypeMapper(t); t != nil {
+			return t
+		}
 	}
 
 	// Defined format types for JSON Schema Validation
