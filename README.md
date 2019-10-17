@@ -16,7 +16,7 @@ The following Go type:
 ```go
 type TestUser struct {
   ID        int                    `json:"id"`
-  Name      string                 `json:"name" jsonschema="title=the name,description=The name of a friend,example=joe,example=lucy,default=alex"`
+  Name      string                 `json:"name" jsonschema:"title=the name,description=The name of a friend,example=joe,example=lucy,default=alex"`
   Friends   []int                  `json:"friends,omitempty" jsonschema_description:"The list of IDs, omitted when empty"`
   Tags      map[string]interface{} `json:"tags,omitempty"`
   BirthDate time.Time              `json:"birth_date,omitempty"`
