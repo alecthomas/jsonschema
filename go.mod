@@ -1,1 +1,3 @@
-module github.com/alecthomas/jsonschema
+module github.com/integration-system/jsonschema
+
+go 1.13
