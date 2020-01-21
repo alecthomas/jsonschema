@@ -37,7 +37,8 @@
         },
         {
           "required": [
-            "child2"
+            "child2",
+            "child3"
           ],
           "title": "group2"
         }
