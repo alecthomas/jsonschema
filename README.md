@@ -15,11 +15,13 @@ The following Go type:
 
 ```go
 type TestUser struct {
-  ID        int                    `json:"id"`
-  Name      string                 `json:"name" jsonschema:"title=the name,description=The name of a friend,example=joe,example=lucy,default=alex"`
-  Friends   []int                  `json:"friends,omitempty" jsonschema_description:"The list of IDs, omitted when empty"`
-  Tags      map[string]interface{} `json:"tags,omitempty"`
-  BirthDate time.Time              `json:"birth_date,omitempty"`
+  ID            int                    `json:"id"`
+  Name          string                 `json:"name" jsonschema:"title=the name,description=The name of a friend,example=joe,example=lucy,default=alex"`
+  Friends       []int                  `json:"friends,omitempty" jsonschema_description:"The list of IDs, omitted when empty"`
+  Tags          map[string]interface{} `json:"tags,omitempty"`
+  BirthDate     time.Time              `json:"birth_date,omitempty" jsonschema:"oneof_required=date"`
+  YearOfBirth   string                 `json:"year_of_birth,omitempty" jsonschema:"oneof_required=year"`
+  Metadata      interface{}            `json:"metadata,omitempty" jsonschema:"oneof_type=string;array"`
 }
 ```
 
@@ -37,6 +39,16 @@ jsonschema.Reflect(&TestUser{})
     "TestUser": {
       "type": "object",
       "properties": {
+        "metadata": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "birth_date": {
           "type": "string",
           "format": "date-time"
@@ -72,7 +84,21 @@ jsonschema.Reflect(&TestUser{})
         }
       },
       "additionalProperties": false,
-      "required": ["id", "name"]
+      "required": ["id", "name"],
+      "oneOf": [
+        {
+          "required": [
+            "birth_date"
+          ],
+          "title": "date"
+        },
+        {
+          "required": [
+            "year_of_birth"
+          ],
+          "title": "year"
+        }
+      ]
     }
   }
 }
