@@ -312,66 +312,19 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 		}
 
 		property := r.reflectTypeToSchema(definitions, f.Type)
-		property.structKeywordsFromTags(f)
+		property.structKeywordsFromTags(f, st, name)
 
 		st.Properties[name] = property
 		if required {
 			st.Required = append(st.Required, name)
 		}
-
-		property.structKeywordsOneOf(f, st, name)
-
 	}
 }
 
-func (t *Type) structKeywordsOneOf(currentFiled reflect.StructField, parentType *Type, propertyName string) {
-	if parentType.OneOf == nil {
-		parentType.OneOf = make([]*Type, 0, 1)
-	}
-
-	oneOf := currentFiled.Tag.Get("jsonschema_oneof")
-	if oneOf == "" {
-		return
-	}
-
-	oneOfSplitted := strings.Split(oneOf, "=")
-	if len(oneOfSplitted) == 2 {
-		switch oneOfSplitted[0] {
-		case "required":
-			var typeFound *Type
-			for i := range parentType.OneOf {
-				if parentType.OneOf[i].Title == oneOfSplitted[1] {
-					typeFound = parentType.OneOf[i]
-				}
-			}
-			if typeFound == nil {
-				typeFound = &Type{
-					Title:    oneOfSplitted[1],
-					Required: []string{},
-				}
-				parentType.OneOf = append(parentType.OneOf, typeFound)
-			}
-			typeFound.Required = append(typeFound.Required, propertyName)
-		case "type":
-			if t.OneOf == nil {
-				t.OneOf = make([]*Type, 0, 1)
-			}
-			t.Type = ""
-			types := strings.Split(oneOfSplitted[1], ",")
-			for _, ty := range types {
-				t.OneOf = append(t.OneOf, &Type{
-					Type: ty,
-				})
-			}
-		}
-	}
-
-}
-
-func (t *Type) structKeywordsFromTags(f reflect.StructField) {
+func (t *Type) structKeywordsFromTags(f reflect.StructField, parentType *Type, propertyName string) {
 	t.Description = f.Tag.Get("jsonschema_description")
 	tags := strings.Split(f.Tag.Get("jsonschema"), ",")
-	t.genericKeywords(tags)
+	t.genericKeywords(tags, parentType, propertyName)
 	switch t.Type {
 	case "string":
 		t.stringKeywords(tags)
@@ -385,7 +338,7 @@ func (t *Type) structKeywordsFromTags(f reflect.StructField) {
 }
 
 // read struct tags for generic keyworks
-func (t *Type) genericKeywords(tags []string) {
+func (t *Type) genericKeywords(tags []string, parentType *Type, propertyName string) {
 	for _, tag := range tags {
 		nameValue := strings.Split(tag, "=")
 		if len(nameValue) == 2 {
@@ -395,6 +348,32 @@ func (t *Type) genericKeywords(tags []string) {
 				t.Title = val
 			case "description":
 				t.Description = val
+			case "oneof_required":
+				var typeFound *Type
+				for i := range parentType.OneOf {
+					if parentType.OneOf[i].Title == nameValue[1] {
+						typeFound = parentType.OneOf[i]
+					}
+				}
+				if typeFound == nil {
+					typeFound = &Type{
+						Title:    nameValue[1],
+						Required: []string{},
+					}
+					parentType.OneOf = append(parentType.OneOf, typeFound)
+				}
+				typeFound.Required = append(typeFound.Required, propertyName)
+			case "oneof_type":
+				if t.OneOf == nil {
+					t.OneOf = make([]*Type, 0, 1)
+				}
+				t.Type = ""
+				types := strings.Split(nameValue[1], ";")
+				for _, ty := range types {
+					t.OneOf = append(t.OneOf, &Type{
+						Type: ty,
+					})
+				}
 			}
 		}
 	}
