@@ -82,12 +82,28 @@ type CustomTypeField struct {
 	CreatedAt CustomTime
 }
 
+type RootOneOf struct {
+	Field1 string      `json:"field1" jsonschema_oneof:"required=group1"`
+	Field2 string      `json:"field2" jsonschema_oneof:"required=group2"`
+	Field3 interface{} `json:"field3" jsonschema_oneof:"type=string,array"`
+	Field4 string      `json:"field4" jsonschema_oneof:"required=group1"`
+	Field5 ChildOneOf  `json:"child"`
+}
+
+type ChildOneOf struct {
+	Child1 string      `json:"child1" jsonschema_oneof:"required=group1"`
+	Child2 string      `json:"child2" jsonschema_oneof:"required=group2"`
+	Child3 interface{} `json:"child3" jsonschema_oneof:"type=string,array"`
+	Child4 string      `json:"child4" jsonschema_oneof:"required=group1"`
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
 		reflector *Reflector
 		fixture   string
 	}{
+		{&RootOneOf{}, &Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/oneof.json"},
 		{&TestUser{}, &Reflector{}, "fixtures/defaults.json"},
 		{&TestUser{}, &Reflector{AllowAdditionalProperties: true}, "fixtures/allow_additional_props.json"},
 		{&TestUser{}, &Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/required_from_jsontags.json"},

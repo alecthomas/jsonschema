@@ -313,11 +313,59 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 
 		property := r.reflectTypeToSchema(definitions, f.Type)
 		property.structKeywordsFromTags(f)
+
 		st.Properties[name] = property
 		if required {
 			st.Required = append(st.Required, name)
 		}
+
+		property.structKeywordsOneOf(f, st, name)
+
 	}
+}
+
+func (t *Type) structKeywordsOneOf(currentFiled reflect.StructField, parentType *Type, propertyName string) {
+	if parentType.OneOf == nil {
+		parentType.OneOf = make([]*Type, 0, 1)
+	}
+
+	oneOf := currentFiled.Tag.Get("jsonschema_oneof")
+	if oneOf == "" {
+		return
+	}
+
+	oneOfSplitted := strings.Split(oneOf, "=")
+	if len(oneOfSplitted) == 2 {
+		switch oneOfSplitted[0] {
+		case "required":
+			var typeFound *Type
+			for i := range parentType.OneOf {
+				if parentType.OneOf[i].Title == oneOfSplitted[1] {
+					typeFound = parentType.OneOf[i]
+				}
+			}
+			if typeFound == nil {
+				typeFound = &Type{
+					Title:    oneOfSplitted[1],
+					Required: []string{},
+				}
+				parentType.OneOf = append(parentType.OneOf, typeFound)
+			}
+			typeFound.Required = append(typeFound.Required, propertyName)
+		case "type":
+			if t.OneOf == nil {
+				t.OneOf = make([]*Type, 0, 1)
+			}
+			t.Type = ""
+			types := strings.Split(oneOfSplitted[1], ",")
+			for _, ty := range types {
+				t.OneOf = append(t.OneOf, &Type{
+					Type: ty,
+				})
+			}
+		}
+	}
+
 }
 
 func (t *Type) structKeywordsFromTags(f reflect.StructField) {
