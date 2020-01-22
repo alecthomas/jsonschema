@@ -289,9 +289,13 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 	definitions[t.PkgPath()+"."+t.Name()] = st
 	r.reflectStructFields(st, definitions, t)
 
-	return &Type{
-		Version: Version,
-		Ref:     "#/definitions/" + t.PkgPath() + "." + t.Name(),
+	if r.DoNotReference {
+		return st
+	} else {
+		return &Type{
+			Version: Version,
+			Ref:     "#/definitions/" + t.PkgPath() + "." + t.Name(),
+		}
 	}
 }
 
