@@ -279,6 +279,8 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 		}
 	}
 	st := &Type{
+		Version:              Version,
+		Ref:                  "#/definitions/" + t.PkgPath() + "." + t.Name(),
 		Type:                 "object",
 		Properties:           map[string]*Type{},
 		AdditionalProperties: []byte("false"),
