@@ -132,7 +132,7 @@ func (r *Reflector) ReflectFromType(t reflect.Type) *Schema {
 		}
 		r.reflectStructFields(st, definitions, t)
 		r.reflectStruct(definitions, t)
-		delete(definitions, t.Name())
+		delete(definitions, t.PkgPath()+"."+t.Name())
 		return &Schema{Type: st, Definitions: definitions}
 	}
 
@@ -168,8 +168,8 @@ var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
-	if _, ok := definitions[t.Name()]; ok && !r.DoNotReference {
-		return &Type{Ref: "#/definitions/" + t.Name()}
+	if _, ok := definitions[t.PkgPath()+"."+t.Name()]; ok && !r.DoNotReference {
+		return &Type{Ref: "#/definitions/" + t.PkgPath() + "." + t.Name()}
 	}
 
 	// jsonpb will marshal protobuf enum options as either strings or integers.
@@ -269,11 +269,11 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 				Properties:           map[string]*Type{},
 				AdditionalProperties: []byte("true"),
 			}
-			definitions[t.Name()] = st
+			definitions[t.PkgPath()+"."+t.Name()] = st
 
 			return &Type{
 				Version: Version,
-				Ref:     "#/definitions/" + t.Name(),
+				Ref:     "#/definitions/" + t.PkgPath() + "." + t.Name(),
 			}
 
 		}
@@ -286,12 +286,12 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 	if r.AllowAdditionalProperties {
 		st.AdditionalProperties = []byte("true")
 	}
-	definitions[t.Name()] = st
+	definitions[t.PkgPath()+"."+t.Name()] = st
 	r.reflectStructFields(st, definitions, t)
 
 	return &Type{
 		Version: Version,
-		Ref:     "#/definitions/" + t.Name(),
+		Ref:     "#/definitions/" + t.PkgPath() + "." + t.Name(),
 	}
 }
 
