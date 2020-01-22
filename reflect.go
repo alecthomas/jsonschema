@@ -101,6 +101,9 @@ type Reflector struct {
 	// be referenced itself to a definition.
 	ExpandedStruct bool
 
+	// Do not reference definitions.
+	DoNotReference bool
+
 	// IgnoredTypes defines a slice of types that should be ignored in the schema,
 	// switching to just allowing additional properties instead.
 	IgnoredTypes []interface{}
@@ -165,7 +168,7 @@ var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
-	if _, ok := definitions[t.Name()]; ok {
+	if _, ok := definitions[t.Name()]; ok && !r.DoNotReference {
 		return &Type{Ref: "#/definitions/" + t.Name()}
 	}
 
