@@ -27,7 +27,7 @@ var Version = "http://json-schema.org/draft-04/schema#"
 // RFC draft-wright-json-schema-00, section 4.5
 type Schema struct {
 	*Type
-	Definitions Definitions `json:"definitions,omitempty"`
+	Definitions Definitions
 }
 
 // Type represents a JSON Schema object type.
@@ -579,6 +579,28 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool)
 	}
 
 	return name, exist, required
+}
+
+func (s *Schema) MarshalJSON() ([]byte, error) {
+	b, err := json.Marshal(s.Type)
+	if err != nil {
+		return nil, err
+	}
+	if s.Definitions == nil || len(s.Definitions) == 0 {
+		return b, nil
+	}
+	d, err := json.Marshal(struct {
+		Definitions Definitions `json:"definitions,omitempty"`
+	}{s.Definitions})
+	if err != nil {
+		return nil, err
+	}
+	if len(b) == 2 {
+		return d, nil
+	} else {
+		b[len(b)-1] = ','
+		return append(b, d[1:]...), nil
+	}
 }
 
 func (t *Type) MarshalJSON() ([]byte, error) {
