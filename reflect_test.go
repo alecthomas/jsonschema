@@ -74,6 +74,9 @@ type TestUser struct {
 	Feeling ProtoEnum `json:"feeling,omitempty"`
 	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true"`
 	Email   string    `json:"email" jsonschema:"format=email"`
+
+	// Test for "extras" support
+	Baz string `jsonschema_extras:"foo=bar,hello=world"`
 }
 
 type CustomTime time.Time

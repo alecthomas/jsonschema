@@ -10,7 +10,8 @@
     "name",
     "TestFlag",
     "age",
-    "email"
+    "email",
+    "Baz"
   ],
   "properties": {
     "some_base_property": {
@@ -102,6 +103,11 @@
     "email": {
       "type": "string",
       "format": "email"
+    },
+    "Baz": {
+      "type": "string",
+      "foo": "bar",
+      "hello": "world"
     }
   },
   "additionalProperties": false,
