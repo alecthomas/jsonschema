@@ -46,10 +46,6 @@
     },
     "RootOneOf": {
       "properties": {
-        "child": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/ChildOneOf"
-        },
         "field1": {
           "type": "string"
         },
@@ -69,6 +65,10 @@
         },
         "field4": {
           "type": "string"
+        },
+        "child": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/ChildOneOf"
         }
       },
       "additionalProperties": false,
