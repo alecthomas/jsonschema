@@ -72,6 +72,8 @@ type Type struct {
 	// RFC draft-wright-json-schema-hyperschema-00, section 4
 	Media          *Type  `json:"media,omitempty"`          // section 4.3
 	BinaryEncoding string `json:"binaryEncoding,omitempty"` // section 4.3
+
+	Extras map[string]interface{} `json:"-"`
 }
 
 // Reflect reflects to Schema from a value using the default Reflector
@@ -337,6 +339,8 @@ func (t *Type) structKeywordsFromTags(f reflect.StructField, parentType *Type, p
 	case "array":
 		t.arrayKeywords(tags)
 	}
+	extras := strings.Split(f.Tag.Get("jsonschema_extras"), ",")
+	t.extraKeywords(extras)
 }
 
 // read struct tags for generic keyworks
@@ -487,6 +491,22 @@ func (t *Type) arrayKeywords(tags []string) {
 	}
 }
 
+func (t *Type) extraKeywords(tags []string) {
+	for _, tag := range tags {
+		nameValue := strings.Split(tag, "=")
+		if len(nameValue) == 2 {
+			t.setExtra(nameValue[0], nameValue[1])
+		}
+	}
+}
+
+func (t *Type) setExtra(key, val string) {
+	if t.Extras == nil {
+		t.Extras = map[string]interface{}{}
+	}
+	t.Extras[key] = val
+}
+
 func requiredFromJSONTags(tags []string) bool {
 	if ignoredByJSONTags(tags) {
 		return false
@@ -559,4 +579,25 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool)
 	}
 
 	return name, exist, required
+}
+
+func (t *Type) MarshalJSON() ([]byte, error) {
+	type Type_ Type
+	b, err := json.Marshal((*Type_)(t))
+	if err != nil {
+		return nil, err
+	}
+	if t.Extras == nil || len(t.Extras) == 0 {
+		return b, nil
+	}
+	m, err := json.Marshal(t.Extras)
+	if err != nil {
+		return nil, err
+	}
+	if len(b) == 2 {
+		return m, nil
+	} else {
+		b[len(b)-1] = ','
+		return append(b, m[1:]...), nil
+	}
 }

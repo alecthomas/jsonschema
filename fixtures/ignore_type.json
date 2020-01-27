@@ -110,6 +110,11 @@
         "email": {
           "type": "string",
           "format": "email"
+        },
+        "Baz": {
+          "type": "string",
+          "foo": "bar",
+          "hello": "world"
         }
       },
       "additionalProperties": false,
