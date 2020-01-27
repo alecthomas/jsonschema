@@ -9,6 +9,7 @@ This package can be used to generate [JSON Schemas](http://json-schema.org/lates
 
 - Supports arbitrarily complex types, including `interface{}`, maps, slices, etc.
 - Supports json-schema features such as minLength, maxLength, pattern, format, etc.
+- Supports simple string and numeric enums.
 - Supports custom property fields via the `jsonschema_extras` struct tag.
 
 ## Example
@@ -24,6 +25,7 @@ type TestUser struct {
   BirthDate     time.Time              `json:"birth_date,omitempty" jsonschema:"oneof_required=date"`
   YearOfBirth   string                 `json:"year_of_birth,omitempty" jsonschema:"oneof_required=year"`
   Metadata      interface{}            `json:"metadata,omitempty" jsonschema:"oneof_type=string;array"`
+  FavColor      string                 `json:"fav_color,omitempty" jsonschema:"enum=red,enum=green,enum=blue"`
 }
 ```
 
@@ -85,6 +87,14 @@ jsonschema.Reflect(&TestUser{})
           },
           "a": "b",
           "foo": "bar"
+        },
+        "fav_color": {
+          "type": "string",
+          "enum": [
+            "red",
+            "green",
+            "blue"
+          ]
         }
       },
       "additionalProperties": false,
