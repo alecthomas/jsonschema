@@ -581,9 +581,9 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool)
 	return name, exist, required
 }
 
-func (t Type) MarshalJSON() ([]byte, error) {
+func (t *Type) MarshalJSON() ([]byte, error) {
 	type Type_ Type
-	b, err := json.Marshal(Type_(t))
+	b, err := json.Marshal((*Type_)(t))
 	if err != nil {
 		return nil, err
 	}
