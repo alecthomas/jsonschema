@@ -13,39 +13,37 @@
     "email"
   ],
   "properties": {
-    "PublicNonExported": {
+    "some_base_property": {
       "type": "integer"
+    },
+    "some_base_property_yaml": {
+      "type": "integer"
+    },
+    "grand": {
+      "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
+      "$ref": "#\/definitions\/GrandfatherType"
     },
     "SomeUntaggedBaseProperty": {
       "type": "boolean"
     },
-    "TestFlag": {
-      "type": "boolean"
-    },
-    "age":{
-      "maximum": 120,
-      "minimum": 18,
-      "exclusiveMaximum": true,
-      "exclusiveMinimum": true,
+    "PublicNonExported": {
       "type": "integer"
     },
-    "email": {
-      "type": "string",
-      "format": "email"
+    "id": {
+      "type": "integer"
     },
-    "birth_date": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "feeling": {
-      "oneOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "integer"
-        }
-      ]
+    "name": {
+        "maxLength": 20,
+        "minLength": 1,
+        "pattern": ".*",
+        "type": "string",
+        "title": "the name",
+        "description": "this is a property",
+        "default": "alex",
+        "examples": [
+          "joe",
+          "lucy"
+        ]
     },
     "friends": {
       "items": {
@@ -54,25 +52,25 @@
       "type": "array",
       "description": "list of IDs, omitted when empty"
     },
-    "grand": {
-      "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
-      "$ref": "#\/definitions\/GrandfatherType"
+    "tags": {
+      "patternProperties": {
+        ".*": {
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "type": "object"
     },
-    "id": {
-      "type": "integer"
+    "TestFlag": {
+      "type": "boolean"
     },
-    "name": {
-        "type": "string",
-        "maxLength": 20,
-        "minLength": 1,
-        "pattern": ".*",
-        "title": "the name",
-        "description": "this is a property",
-        "default": "alex",
-        "examples": [
-          "joe",
-          "lucy"
-        ]
+    "birth_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "website": {
+      "type": "string",
+      "format": "uri"
     },
     "network_address": {
       "type": "string",
@@ -84,24 +82,26 @@
         "binaryEncoding": "base64"
       }
     },
-    "some_base_property": {
-      "type": "integer"
-    },
-    "some_base_property_yaml": {
-      "type": "integer"
-    },
-    "tags": {
-      "patternProperties": {
-        ".*": {
-          "additionalProperties": true,
-          "type": "object"
+    "feeling": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
         }
-      },
-      "type": "object"
+      ]
     },
-    "website": {
+    "age":{
+      "maximum": 120,
+      "exclusiveMaximum": true,
+      "minimum": 18,
+      "exclusiveMinimum": true,
+      "type": "integer"
+    },
+    "email": {
       "type": "string",
-      "format": "uri"
+      "format": "email"
     }
   },
   "additionalProperties": false,
