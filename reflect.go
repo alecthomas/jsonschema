@@ -73,7 +73,7 @@ type Type struct {
 	Media          *Type  `json:"media,omitempty"`          // section 4.3
 	BinaryEncoding string `json:"binaryEncoding,omitempty"` // section 4.3
 
-	Extras map[string]interface{} `json:"-"`
+	Extras map[string]interface{} `json:"-" `
 }
 
 // Reflect reflects to Schema from a value using the default Reflector
