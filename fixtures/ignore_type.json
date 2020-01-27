@@ -18,7 +18,8 @@
         "name",
         "TestFlag",
         "age",
-        "email"
+        "email",
+        "color"
       ],
       "properties": {
         "some_base_property": {
@@ -110,6 +111,30 @@
         "email": {
           "type": "string",
           "format": "email"
+        },
+        "color": {
+          "enum": [
+            "red",
+            "green",
+            "blue"
+          ],
+          "type": "string"
+        },
+        "rank": {
+          "enum": [
+            1,
+            2,
+            3
+          ],
+          "type": "integer"
+        },
+        "mult": {
+          "enum": [
+            1,
+            1.5,
+            2
+          ],
+          "type": "number"
         }
       },
       "additionalProperties": false,
