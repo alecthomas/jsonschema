@@ -143,3 +143,15 @@ func TestSchemaGeneration(t *testing.T) {
 		})
 	}
 }
+
+func TestBaselineUnmarshal(t *testing.T) {
+	expectedJSON, err := ioutil.ReadFile("fixtures/defaults.json")
+	require.NoError(t, err)
+
+	reflector := &Reflector{}
+	actualSchema := reflector.Reflect(&TestUser{})
+
+	actualJSON, _ := json.MarshalIndent(actualSchema, "", "  ")
+
+	require.Equal(t, strings.Replace(string(expectedJSON), `\/`, "/", -1), string(actualJSON))
+}
