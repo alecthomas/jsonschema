@@ -25,7 +25,8 @@
         "name",
         "TestFlag",
         "age",
-        "email"
+        "email",
+        "Baz"
       ],
       "properties": {
         "some_base_property": {
