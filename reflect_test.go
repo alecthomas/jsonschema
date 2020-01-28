@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/iancoleman/strcase"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -168,5 +167,5 @@ func TestNameConversion(t *testing.T) {
 	}}
 	schema := reflector.Reflect(&SimpleStruct{})
 	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("simpleProperty")
-	assert.True(t, exists)
+	require.True(t, exists)
 }
