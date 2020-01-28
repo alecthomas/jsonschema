@@ -108,6 +108,9 @@ type Reflector struct {
 	// Do not reference definitions.
 	DoNotReference bool
 
+	// Use package paths as well as type names, to avoid conflicts.
+	FullyQualifyTypeNames bool
+
 	// IgnoredTypes defines a slice of types that should be ignored in the schema,
 	// switching to just allowing additional properties instead.
 	IgnoredTypes []interface{}
@@ -136,7 +139,7 @@ func (r *Reflector) ReflectFromType(t reflect.Type) *Schema {
 		}
 		r.reflectStructFields(st, definitions, t)
 		r.reflectStruct(definitions, t)
-		delete(definitions, t.PkgPath()+"."+t.Name())
+		delete(definitions, r.typeName(t))
 		return &Schema{Type: st, Definitions: definitions}
 	}
 
@@ -172,8 +175,8 @@ var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
-	if _, ok := definitions[t.PkgPath()+"."+t.Name()]; ok && !r.DoNotReference {
-		return &Type{Ref: "#/definitions/" + t.PkgPath() + "." + t.Name()}
+	if _, ok := definitions[r.typeName(t)]; ok && !r.DoNotReference {
+		return &Type{Ref: "#/definitions/" + r.typeName(t)}
 	}
 
 	// jsonpb will marshal protobuf enum options as either strings or integers.
@@ -273,14 +276,14 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 				Properties:           orderedmap.New(),
 				AdditionalProperties: []byte("true"),
 			}
-			definitions[t.PkgPath()+"."+t.Name()] = st
+			definitions[r.typeName(t)] = st
 
 			if r.DoNotReference {
 				return st
 			} else {
 				return &Type{
 					Version: Version,
-					Ref:     "#/definitions/" + t.PkgPath() + "." + t.Name(),
+					Ref:     "#/definitions/" + r.typeName(t),
 				}
 			}
 
@@ -294,7 +297,7 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 	if r.AllowAdditionalProperties {
 		st.AdditionalProperties = []byte("true")
 	}
-	definitions[t.PkgPath()+"."+t.Name()] = st
+	definitions[r.typeName(t)] = st
 	r.reflectStructFields(st, definitions, t)
 
 	if r.DoNotReference {
@@ -302,7 +305,7 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 	} else {
 		return &Type{
 			Version: Version,
-			Ref:     "#/definitions/" + t.PkgPath() + "." + t.Name(),
+			Ref:     "#/definitions/" + r.typeName(t),
 		}
 	}
 }
@@ -644,4 +647,11 @@ func (t *Type) MarshalJSON() ([]byte, error) {
 		b[len(b)-1] = ','
 		return append(b, m[1:]...), nil
 	}
+}
+
+func (r *Reflector) typeName(t reflect.Type) string {
+	if r.FullyQualifyTypeNames {
+		return t.PkgPath() + "." + t.Name()
+	}
+	return t.Name()
 }
