@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iancoleman/strcase"
 	"github.com/stretchr/testify/require"
 )
 
@@ -162,10 +161,10 @@ func TestBaselineUnmarshal(t *testing.T) {
 }
 
 func TestNameConversion(t *testing.T) {
-	reflector := &Reflector{PropertyNameConversion: func(s string) string {
-		return strcase.ToCamel(s)
+	reflector := &Reflector{PropertyNameConversion: func(name string) string {
+		return strings.ToLower(name)
 	}}
 	schema := reflector.Reflect(&SimpleStruct{})
-	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("simpleProperty")
+	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("simpleproperty")
 	require.True(t, exists)
 }
