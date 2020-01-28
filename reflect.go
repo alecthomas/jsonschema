@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/iancoleman/orderedmap"
-	"github.com/iancoleman/strcase"
 )
 
 // Version is the JSON Schema version.
@@ -113,8 +112,8 @@ type Reflector struct {
 	// TypeMapper is a function that can be used to map custom Go types to jsconschema types.
 	TypeMapper func(reflect.Type) *Type
 
-	// NamingConvention specifies how Go field names should be converted to jsonschema property names.
-	NamingConvention NamingConvention
+	// PropertyNameConversion specifies how Go field names should be converted to jsonschema property names.
+	PropertyNameConversion func(string) string
 }
 
 const (
@@ -577,14 +576,8 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool)
 		required = requiredFromJSONSchemaTags(jsonSchemaTags)
 	}
 
-	switch r.NamingConvention {
-	case CamelCaseNamingConvention:
-		name = strcase.ToLowerCamel(name)
-	case KebabCaseNamingConvention:
-		name = strcase.ToKebab(name)
-	case AllLowerNamingConvention:
-		name = strings.ToLower(name)
-	case PascalCaseNamingConvention:
+	if r.PropertyNameConversion != nil {
+		name = r.PropertyNameConversion(name)
 	}
 
 	if jsonTagsList[0] != "" {

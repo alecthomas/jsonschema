@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/iancoleman/strcase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -161,34 +162,11 @@ func TestBaselineUnmarshal(t *testing.T) {
 	require.Equal(t, strings.Replace(string(expectedJSON), `\/`, "/", -1), string(actualJSON))
 }
 
-func TestCamelCaseNamingConvention(t *testing.T) {
-	reflector := &Reflector{NamingConvention: CamelCaseNamingConvention}
+func TestNameConversion(t *testing.T) {
+	reflector := &Reflector{PropertyNameConversion: func(s string) string {
+		return strcase.ToCamel(s)
+	}}
 	schema := reflector.Reflect(&SimpleStruct{})
-
 	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("simpleProperty")
-	assert.True(t, exists)
-}
-
-func TestKebabCaseNamingConvention(t *testing.T) {
-	reflector := &Reflector{NamingConvention: KebabCaseNamingConvention}
-	schema := reflector.Reflect(&SimpleStruct{})
-
-	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("simple-property")
-	assert.True(t, exists)
-}
-
-func TestAllLowerNamingConvention(t *testing.T) {
-	reflector := &Reflector{NamingConvention: AllLowerNamingConvention}
-	schema := reflector.Reflect(&SimpleStruct{})
-
-	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("simpleproperty")
-	assert.True(t, exists)
-}
-
-func TestDefaultPascalNamingConvention(t *testing.T) {
-	reflector := &Reflector{}
-	schema := reflector.Reflect(&SimpleStruct{})
-
-	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("SimpleProperty")
 	assert.True(t, exists)
 }
