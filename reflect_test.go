@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -100,6 +101,10 @@ type ChildOneOf struct {
 	Child4 string      `json:"child4" jsonschema:"oneof_required=group1"`
 }
 
+type SimpleStruct struct {
+	SimpleProperty string
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
@@ -154,4 +159,36 @@ func TestBaselineUnmarshal(t *testing.T) {
 	actualJSON, _ := json.MarshalIndent(actualSchema, "", "  ")
 
 	require.Equal(t, strings.Replace(string(expectedJSON), `\/`, "/", -1), string(actualJSON))
+}
+
+func TestCamelCaseNamingConvention(t *testing.T) {
+	reflector := &Reflector{NamingConvention: CamelCaseNamingConvention}
+	schema := reflector.Reflect(&SimpleStruct{})
+
+	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("simpleProperty")
+	assert.True(t, exists)
+}
+
+func TestKebabCaseNamingConvention(t *testing.T) {
+	reflector := &Reflector{NamingConvention: KebabCaseNamingConvention}
+	schema := reflector.Reflect(&SimpleStruct{})
+
+	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("simple-property")
+	assert.True(t, exists)
+}
+
+func TestAllLowerNamingConvention(t *testing.T) {
+	reflector := &Reflector{NamingConvention: AllLowerNamingConvention}
+	schema := reflector.Reflect(&SimpleStruct{})
+
+	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("simpleproperty")
+	assert.True(t, exists)
+}
+
+func TestDefaultPascalNamingConvention(t *testing.T) {
+	reflector := &Reflector{}
+	schema := reflector.Reflect(&SimpleStruct{})
+
+	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("SimpleProperty")
+	assert.True(t, exists)
 }
