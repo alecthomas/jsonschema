@@ -116,15 +116,6 @@ type Reflector struct {
 	PropertyNameConversion func(string) string
 }
 
-const (
-	PascalCaseNamingConvention NamingConvention = iota
-	CamelCaseNamingConvention
-	KebabCaseNamingConvention
-	AllLowerNamingConvention
-)
-
-type NamingConvention uint32
-
 // Reflect reflects to Schema from a value.
 func (r *Reflector) Reflect(v interface{}) *Schema {
 	return r.ReflectFromType(reflect.TypeOf(v))
