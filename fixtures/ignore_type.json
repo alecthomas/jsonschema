@@ -19,6 +19,7 @@
         "TestFlag",
         "age",
         "email",
+        "Baz",
         "color"
       ],
       "properties": {
@@ -111,6 +112,11 @@
         "email": {
           "type": "string",
           "format": "email"
+        },
+        "Baz": {
+          "type": "string",
+          "foo": "bar",
+          "hello": "world"
         },
         "color": {
           "enum": [

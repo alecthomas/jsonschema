@@ -75,6 +75,9 @@ type TestUser struct {
 	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true"`
 	Email   string    `json:"email" jsonschema:"format=email"`
 
+	// Test for "extras" support
+	Baz string `jsonschema_extras:"foo=bar,hello=world"`
+
 	// Tests for simple enum tags
 	Color      string  `json:"color" jsonschema:"enum=red,enum=green,enum=blue"`
 	Rank       int     `json:"rank,omitempty" jsonschema:"enum=1,enum=2,enum=3"`
@@ -144,4 +147,16 @@ func TestSchemaGeneration(t *testing.T) {
 			require.Equal(t, string(expectedJSON), string(actualJSON))
 		})
 	}
+}
+
+func TestBaselineUnmarshal(t *testing.T) {
+	expectedJSON, err := ioutil.ReadFile("fixtures/defaults.json")
+	require.NoError(t, err)
+
+	reflector := &Reflector{}
+	actualSchema := reflector.Reflect(&TestUser{})
+
+	actualJSON, _ := json.MarshalIndent(actualSchema, "", "  ")
+
+	require.Equal(t, strings.Replace(string(expectedJSON), `\/`, "/", -1), string(actualJSON))
 }
