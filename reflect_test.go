@@ -167,4 +167,7 @@ func TestNameConversion(t *testing.T) {
 	schema := reflector.Reflect(&SimpleStruct{})
 	_, exists := schema.Definitions["SimpleStruct"].Properties.Get("simpleproperty")
 	require.True(t, exists)
+
+	schemaJSON, _ := json.Marshal(schema)
+	require.Contains(t, string(schemaJSON), "simpleproperty")
 }
