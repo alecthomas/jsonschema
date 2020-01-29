@@ -77,6 +77,11 @@ type TestUser struct {
 
 	// Test for "extras" support
 	Baz string `jsonschema_extras:"foo=bar,hello=world"`
+
+	// Tests for simple enum tags
+	Color      string  `json:"color" jsonschema:"enum=red,enum=green,enum=blue"`
+	Rank       int     `json:"rank,omitempty" jsonschema:"enum=1,enum=2,enum=3"`
+	Multiplier float64 `json:"mult,omitempty" jsonschema:"enum=1.0,enum=1.5,enum=2.0"`
 }
 
 type CustomTime time.Time

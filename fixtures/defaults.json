@@ -26,7 +26,8 @@
         "TestFlag",
         "age",
         "email",
-        "Baz"
+        "Baz",
+        "color"
       ],
       "properties": {
         "some_base_property": {
@@ -123,6 +124,30 @@
           "type": "string",
           "foo": "bar",
           "hello": "world"
+        },
+        "color": {
+          "enum": [
+            "red",
+            "green",
+            "blue"
+          ],
+          "type": "string"
+        },
+        "rank": {
+          "enum": [
+            1,
+            2,
+            3
+          ],
+          "type": "integer"
+        },
+        "mult": {
+          "enum": [
+            1,
+            1.5,
+            2
+          ],
+          "type": "number"
         }
       },
       "additionalProperties": false,
