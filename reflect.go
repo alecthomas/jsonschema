@@ -601,8 +601,9 @@ func (s *Schema) MarshalJSON() ([]byte, error) {
 		return b, nil
 	}
 	d, err := json.Marshal(struct {
-		Definitions Definitions `json:"definitions,omitempty"`
-	}{s.Definitions})
+		DefinitionsLegacy Definitions `json:"definitions,omitempty"`
+		Definitions Definitions `json:"$defs,omitempty"`
+	}{s.Definitions, s.Definitions})
 	if err != nil {
 		return nil, err
 	}
