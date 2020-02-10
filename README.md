@@ -81,7 +81,6 @@ jsonschema.Reflect(&TestUser{})
           "type": "object",
           "patternProperties": {
             ".*": {
-              "type": "object",
               "additionalProperties": true
             }
           },

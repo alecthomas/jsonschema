@@ -238,7 +238,6 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 
 	case reflect.Interface:
 		return &Type{
-			Type:                 "object",
 			AdditionalProperties: []byte("true"),
 		}
 
