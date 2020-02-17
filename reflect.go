@@ -353,6 +353,8 @@ func (t *Type) genericKeywords(tags []string, parentType *Type, propertyName str
 				t.Title = val
 			case "description":
 				t.Description = val
+			case "type":
+				t.Type = val
 			case "oneof_required":
 				var typeFound *Type
 				for i := range parentType.OneOf {
