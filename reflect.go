@@ -111,6 +111,8 @@ type Reflector struct {
 
 	// TypeMapper is a function that can be used to map custom Go types to jsconschema types.
 	TypeMapper func(reflect.Type) *Type
+
+	SchemaTypeMapper func(*Type) *Type
 }
 
 // Reflect reflects to Schema from a value.
@@ -167,12 +169,18 @@ type protoEnum interface {
 
 var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 
-func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
-	// Already added to definitions?
-	if _, ok := definitions[t.Name()]; ok {
-		return &Type{Ref: "#/definitions/" + t.Name()}
-	}
 
+func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
+	schemaTypeWrapper := func(t *Type) *Type {
+		return t
+	}
+	if r.SchemaTypeMapper != nil {
+		schemaTypeWrapper = r.SchemaTypeMapper
+	}
+	return schemaTypeWrapper(r.reflectTypeToSchemaRaw(definitions, t))
+}
+
+func (r *Reflector) reflectTypeToSchemaRaw(definitions Definitions, t reflect.Type) *Type {
 	// jsonpb will marshal protobuf enum options as either strings or integers.
 	// It will unmarshal either.
 	if t.Implements(protoEnumType) {
