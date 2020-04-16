@@ -22,38 +22,36 @@
         "photo"
       ],
       "properties": {
-        "PublicNonExported": {
+        "some_base_property": {
           "type": "integer"
+        },
+        "some_base_property_yaml": {
+          "type": "integer"
+        },
+        "grand": {
+          "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
+          "$ref": "#\/definitions\/GrandfatherType"
         },
         "SomeUntaggedBaseProperty": {
           "type": "boolean"
         },
-        "TestFlag": {
-          "type": "boolean"
-        },
-        "age":{
-          "maximum": 120,
-          "minimum": 18,
-          "exclusiveMaximum": true,
-          "exclusiveMinimum": true,
+        "PublicNonExported": {
           "type": "integer"
         },
-        "email": {
-          "type": "string",
-          "format": "email"
+        "id": {
+          "type": "integer"
         },
-        "birth_date": {
+        "name": {
+          "maxLength": 20,
+          "minLength": 1,
+          "pattern": ".*",
           "type": "string",
-          "format": "date-time"
-        },
-        "feeling": {
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "integer"
-            }
+          "title": "the name",
+          "description": "this is a property",
+          "default": "alex",
+          "examples": [
+            "joe",
+            "lucy"
           ]
         },
         "friends": {
@@ -63,25 +61,24 @@
           "type": "array",
           "description": "list of IDs, omitted when empty"
         },
-        "grand": {
-          "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
-          "$ref": "#\/definitions\/GrandfatherType"
+        "tags": {
+          "patternProperties": {
+            ".*": {
+              "additionalProperties": true
+            }
+          },
+          "type": "object"
         },
-        "id": {
-          "type": "integer"
+        "TestFlag": {
+          "type": "boolean"
         },
-        "name": {
+        "birth_date": {
           "type": "string",
-          "maxLength": 20,
-          "minLength": 1,
-          "pattern": ".*",
-          "title": "the name",
-          "description": "this is a property",
-          "default": "alex",
-          "examples": [
-            "joe",
-            "lucy"
-          ]
+          "format": "date-time"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri"
         },
         "network_address": {
           "type": "string",
@@ -93,24 +90,55 @@
             "binaryEncoding": "base64"
           }
         },
-        "some_base_property": {
-          "type": "integer"
-        },
-        "some_base_property_yaml": {
-          "type": "integer"
-        },
-        "tags": {
-          "patternProperties": {
-            ".*": {
-              "additionalProperties": true,
-              "type": "object"
+        "feeling": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
             }
-          },
-          "type": "object"
+          ]
         },
-        "website": {
+        "age":{
+          "maximum": 120,
+          "exclusiveMaximum": true,
+          "minimum": 18,
+          "exclusiveMinimum": true,
+          "type": "integer"
+        },
+        "email": {
           "type": "string",
-          "format": "uri"
+          "format": "email"
+        },
+        "Baz": {
+          "type": "string",
+          "foo": "bar",
+          "hello": "world"
+        },
+        "color": {
+          "enum": [
+            "red",
+            "green",
+            "blue"
+          ],
+          "type": "string"
+        },
+        "rank": {
+          "enum": [
+            1,
+            2,
+            3
+          ],
+          "type": "integer"
+        },
+        "mult": {
+          "enum": [
+            1,
+            1.5,
+            2
+          ],
+          "type": "number"
         }
       },
       "additionalProperties": false,

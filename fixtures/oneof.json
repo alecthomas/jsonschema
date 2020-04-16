@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/RootOneOf",
+  "definitions": {
+    "ChildOneOf": {
+      "properties": {
+        "child1": {
+          "type": "string"
+        },
+        "child2": {
+          "type": "string"
+        },
+        "child3": {
+          "additionalProperties": true,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
+        "child4": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "oneOf": [
+        {
+          "required": [
+            "child1",
+            "child4"
+          ],
+          "title": "group1"
+        },
+        {
+          "required": [
+            "child2",
+            "child3"
+          ],
+          "title": "group2"
+        }
+      ]
+    },
+    "RootOneOf": {
+      "properties": {
+        "field1": {
+          "type": "string"
+        },
+        "field2": {
+          "type": "string"
+        },
+        "field3": {
+          "additionalProperties": true,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
+        "field4": {
+          "type": "string"
+        },
+        "child": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/ChildOneOf"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "oneOf": [
+        {
+          "required": [
+            "field1",
+            "field4"
+          ],
+          "title": "group1"
+        },
+        {
+          "required": [
+            "field2"
+          ],
+          "title": "group2"
+        }
+      ]
+    }
+  }
+}
