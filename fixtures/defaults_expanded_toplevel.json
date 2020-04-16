@@ -106,7 +106,10 @@
     },
     "Baz": {
       "type": "string",
-      "foo": "bar",
+       "foo": [
+          "bar",
+          "bar1"
+        ],
       "hello": "world"
     },
     "color": {
