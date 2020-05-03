@@ -76,7 +76,7 @@ type TestUser struct {
 	Email   string    `json:"email" jsonschema:"format=email"`
 
 	// Test for "extras" support
-	Baz string `jsonschema_extras:"foo=bar,hello=world"`
+	Baz string `jsonschema_extras:"foo=bar,hello=world,foo=bar1"`
 
 	// Tests for simple enum tags
 	Color      string  `json:"color" jsonschema:"enum=red,enum=green,enum=blue"`

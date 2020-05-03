@@ -516,7 +516,16 @@ func (t *Type) setExtra(key, val string) {
 	if t.Extras == nil {
 		t.Extras = map[string]interface{}{}
 	}
-	t.Extras[key] = val
+	if existingVal, ok := t.Extras[key]; ok {
+		switch existingVal.(type) {
+		case string:
+			t.Extras[key] = []string{existingVal.(string), val}
+		case []string:
+			t.Extras[key] = append(existingVal.([]string), val)
+		}
+	} else {
+		t.Extras[key] = val
+	}
 }
 
 func requiredFromJSONTags(tags []string) bool {
