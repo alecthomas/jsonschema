@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/github.com/alecthomas/jsonschema.TestUser",
+  "definitions": {
+    "github.com/alecthomas/jsonschema.GrandfatherType": {
+      "required": [
+        "family_name"
+      ],
+      "properties": {
+        "family_name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "github.com/alecthomas/jsonschema.TestUser": {
+      "required": [
+        "some_base_property",
+        "some_base_property_yaml",
+        "grand",
+        "SomeUntaggedBaseProperty",
+        "PublicNonExported",
+        "id",
+        "name",
+        "TestFlag",
+        "age",
+        "email",
+        "Baz",
+        "color"
+      ],
+      "properties": {
+        "some_base_property": {
+          "type": "integer"
+        },
+        "some_base_property_yaml": {
+          "type": "integer"
+        },
+        "grand": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/github.com/alecthomas/jsonschema.GrandfatherType"
+        },
+        "SomeUntaggedBaseProperty": {
+          "type": "boolean"
+        },
+        "PublicNonExported": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 20,
+          "minLength": 1,
+          "pattern": ".*",
+          "type": "string",
+          "title": "the name",
+          "description": "this is a property",
+          "default": "alex",
+          "examples": [
+            "joe",
+            "lucy"
+          ]
+        },
+        "friends": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array",
+          "description": "list of IDs, omitted when empty"
+        },
+        "tags": {
+          "patternProperties": {
+            ".*": {
+              "additionalProperties": true
+            }
+          },
+          "type": "object"
+        },
+        "TestFlag": {
+          "type": "boolean"
+        },
+        "birth_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri"
+        },
+        "network_address": {
+          "type": "string",
+          "format": "ipv4"
+        },
+        "photo": {
+          "type": "string",
+          "media": {
+            "binaryEncoding": "base64"
+          }
+        },
+        "feeling": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "age": {
+          "maximum": 120,
+          "exclusiveMaximum": true,
+          "minimum": 18,
+          "exclusiveMinimum": true,
+          "type": "integer"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "Baz": {
+          "type": "string",
+          "foo": [
+            "bar",
+            "bar1"
+          ],
+          "hello": "world"
+        },
+        "color": {
+          "enum": [
+            "red",
+            "green",
+            "blue"
+          ],
+          "type": "string"
+        },
+        "rank": {
+          "enum": [
+            1,
+            2,
+            3
+          ],
+          "type": "integer"
+        },
+        "mult": {
+          "enum": [
+            1,
+            1.5,
+            2
+          ],
+          "type": "number"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}

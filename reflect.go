@@ -105,6 +105,20 @@ type Reflector struct {
 	// be referenced itself to a definition.
 	ExpandedStruct bool
 
+	// Do not reference definitions.
+	// All types are still registered under the "definitions" top-level object,
+	// but instead of $ref fields in containing types, the entire definition
+	// of the contained type is inserted.
+	// This will cause the entire structure of types to be output in one tree.
+	DoNotReference bool
+
+	// Use package paths as well as type names, to avoid conflicts.
+	// Without this setting, if two packages contain a type with the same name,
+	// and both are present in a schema, they will conflict and overwrite in
+	// the definition map and produce bad output.  This is particularly
+	// noticeable when using DoNotReference.
+	FullyQualifyTypeNames bool
+
 	// IgnoredTypes defines a slice of types that should be ignored in the schema,
 	// switching to just allowing additional properties instead.
 	IgnoredTypes []interface{}
@@ -133,7 +147,7 @@ func (r *Reflector) ReflectFromType(t reflect.Type) *Schema {
 		}
 		r.reflectStructFields(st, definitions, t)
 		r.reflectStruct(definitions, t)
-		delete(definitions, t.Name())
+		delete(definitions, r.typeName(t))
 		return &Schema{Type: st, Definitions: definitions}
 	}
 
@@ -169,8 +183,8 @@ var protoEnumType = reflect.TypeOf((*protoEnum)(nil)).Elem()
 
 func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type) *Type {
 	// Already added to definitions?
-	if _, ok := definitions[t.Name()]; ok {
-		return &Type{Ref: "#/definitions/" + t.Name()}
+	if _, ok := definitions[r.typeName(t)]; ok && !r.DoNotReference {
+		return &Type{Ref: "#/definitions/" + r.typeName(t)}
 	}
 
 	// jsonpb will marshal protobuf enum options as either strings or integers.
@@ -269,11 +283,15 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 				Properties:           orderedmap.New(),
 				AdditionalProperties: []byte("true"),
 			}
-			definitions[t.Name()] = st
+			definitions[r.typeName(t)] = st
 
-			return &Type{
-				Version: Version,
-				Ref:     "#/definitions/" + t.Name(),
+			if r.DoNotReference {
+				return st
+			} else {
+				return &Type{
+					Version: Version,
+					Ref:     "#/definitions/" + r.typeName(t),
+				}
 			}
 
 		}
@@ -286,12 +304,16 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 	if r.AllowAdditionalProperties {
 		st.AdditionalProperties = []byte("true")
 	}
-	definitions[t.Name()] = st
+	definitions[r.typeName(t)] = st
 	r.reflectStructFields(st, definitions, t)
 
-	return &Type{
-		Version: Version,
-		Ref:     "#/definitions/" + t.Name(),
+	if r.DoNotReference {
+		return st
+	} else {
+		return &Type{
+			Version: Version,
+			Ref:     "#/definitions/" + r.typeName(t),
+		}
 	}
 }
 
@@ -643,4 +665,11 @@ func (t *Type) MarshalJSON() ([]byte, error) {
 		b[len(b)-1] = ','
 		return append(b, m[1:]...), nil
 	}
+}
+
+func (r *Reflector) typeName(t reflect.Type) string {
+	if r.FullyQualifyTypeNames {
+		return t.PkgPath() + "." + t.Name()
+	}
+	return t.Name()
 }
