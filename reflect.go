@@ -106,9 +106,17 @@ type Reflector struct {
 	ExpandedStruct bool
 
 	// Do not reference definitions.
+	// All types are still registered under the "definitions" top-level object,
+	// but instead of $ref fields in containing types, the entire definition
+	// of the contained type is inserted.
+	// This will cause the entire structure of types to be output in one tree.
 	DoNotReference bool
 
 	// Use package paths as well as type names, to avoid conflicts.
+	// Without this setting, if two packages contain a type with the same name,
+	// and both are present in a schema, they will conflict and overwrite in
+	// the definition map and produce bad output.  This is particularly
+	// noticeable when using DoNotReference.
 	FullyQualifyTypeNames bool
 
 	// IgnoredTypes defines a slice of types that should be ignored in the schema,
