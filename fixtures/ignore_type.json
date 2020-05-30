@@ -65,8 +65,7 @@
         "tags": {
           "patternProperties": {
             ".*": {
-              "additionalProperties": true,
-              "type": "object"
+              "additionalProperties": true
             }
           },
           "type": "object"
@@ -115,7 +114,10 @@
         },
         "Baz": {
           "type": "string",
-          "foo": "bar",
+          "foo": [
+            "bar",
+            "bar1"
+          ],
           "hello": "world"
         },
         "color": {

@@ -244,7 +244,6 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 
 	case reflect.Interface:
 		return &Type{
-			Type:                 "object",
 			AdditionalProperties: []byte("true"),
 		}
 
@@ -368,6 +367,8 @@ func (t *Type) genericKeywords(tags []string, parentType *Type, propertyName str
 				t.Title = val
 			case "description":
 				t.Description = val
+			case "type":
+				t.Type = val
 			case "oneof_required":
 				var typeFound *Type
 				for i := range parentType.OneOf {
@@ -529,7 +530,16 @@ func (t *Type) setExtra(key, val string) {
 	if t.Extras == nil {
 		t.Extras = map[string]interface{}{}
 	}
-	t.Extras[key] = val
+	if existingVal, ok := t.Extras[key]; ok {
+		switch existingVal.(type) {
+		case string:
+			t.Extras[key] = []string{existingVal.(string), val}
+		case []string:
+			t.Extras[key] = append(existingVal.([]string), val)
+		}
+	} else {
+		t.Extras[key] = val
+	}
 }
 
 func requiredFromJSONTags(tags []string) bool {
