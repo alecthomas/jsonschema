@@ -239,16 +239,14 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			returnType.MinItems = t.Len()
 			returnType.MaxItems = returnType.MinItems
 		}
-		switch t {
-		case byteSliceType:
+		if t.Kind() == reflect.Slice && t.Elem() == byteSliceType.Elem() {
 			returnType.Type = "string"
 			returnType.Media = &Type{BinaryEncoding: "base64"}
 			return returnType
-		default:
-			returnType.Type = "array"
-			returnType.Items = r.reflectTypeToSchema(definitions, t.Elem())
-			return returnType
 		}
+		returnType.Type = "array"
+		returnType.Items = r.reflectTypeToSchema(definitions, t.Elem())
+		return returnType
 
 	case reflect.Interface:
 		return &Type{
