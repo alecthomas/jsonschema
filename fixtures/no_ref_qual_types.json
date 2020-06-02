@@ -90,6 +90,12 @@
         "binaryEncoding": "base64"
       }
     },
+    "photo2": {
+      "type": "string",
+      "media": {
+        "binaryEncoding": "base64"
+      }
+    },
     "feeling": {
       "oneOf": [
         {
@@ -246,6 +252,12 @@
           "format": "ipv4"
         },
         "photo": {
+          "type": "string",
+          "media": {
+            "binaryEncoding": "base64"
+          }
+        },
+        "photo2": {
           "type": "string",
           "media": {
             "binaryEncoding": "base64"

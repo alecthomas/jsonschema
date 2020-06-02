@@ -69,6 +69,7 @@ type TestUser struct {
 
 	// Tests for RFC draft-wright-json-schema-hyperschema-00, section 4
 	Photo []byte `json:"photo,omitempty" jsonschema:"required"`
+	Photo2 Bytes `json:"photo2,omitempty" jsonschema:"required"`
 
 	// Tests for jsonpb enum support
 	Feeling ProtoEnum `json:"feeling,omitempty"`
@@ -104,6 +105,8 @@ type ChildOneOf struct {
 	Child3 interface{} `json:"child3" jsonschema:"oneof_required=group2,oneof_type=string;array"`
 	Child4 string      `json:"child4" jsonschema:"oneof_required=group1"`
 }
+
+type Bytes []byte
 
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {

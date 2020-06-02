@@ -19,7 +19,8 @@
         "SomeUntaggedBaseProperty",
         "id",
         "name",
-        "photo"
+        "photo",
+        "photo2"
       ],
       "properties": {
         "some_base_property": {
@@ -85,6 +86,12 @@
           "format": "ipv4"
         },
         "photo": {
+          "type": "string",
+          "media": {
+            "binaryEncoding": "base64"
+          }
+        },
+        "photo2": {
           "type": "string",
           "media": {
             "binaryEncoding": "base64"
