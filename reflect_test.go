@@ -105,6 +105,14 @@ type ChildOneOf struct {
 	Child4 string      `json:"child4" jsonschema:"oneof_required=group1"`
 }
 
+type Outer struct {
+	Inner
+}
+
+type Inner struct {
+	Foo string `yaml:"foo"`
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
@@ -131,6 +139,8 @@ func TestSchemaGeneration(t *testing.T) {
 				return nil
 			},
 		}, "fixtures/custom_type.json"},
+		{&TestUser{}, &Reflector{DoNotReference: true, FullyQualifyTypeNames: true}, "fixtures/no_ref_qual_types.json"},
+		{&Outer{}, &Reflector{ExpandedStruct: true, DoNotReference: true, YAMLEmbeddedStructs: true}, "fixtures/disable_inlining_embedded.json"},
 	}
 
 	for _, tt := range tests {

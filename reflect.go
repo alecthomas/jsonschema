@@ -101,6 +101,11 @@ type Reflector struct {
 	// default of requiring any key *not* tagged with `json:,omitempty`.
 	RequiredFromJSONSchemaTags bool
 
+	// YAMLEmbeddedStructs will cause the Reflector to generate a schema that does
+	// not inline embedded structs. This should be enabled if the JSON schemas are
+	// used with yaml.Marshal/Unmarshal.
+	YAMLEmbeddedStructs bool
+
 	// ExpandedStruct will cause the toplevel definitions of the schema not
 	// be referenced itself to a definition.
 	ExpandedStruct bool
@@ -618,7 +623,11 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool)
 
 	// field anonymous but without json tag should be inherited by current type
 	if f.Anonymous && !exist {
-		name = ""
+		if !r.YAMLEmbeddedStructs {
+			name = ""
+		} else {
+			name = strings.ToLower(name)
+		}
 	}
 
 	return name, exist, required
