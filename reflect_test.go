@@ -68,8 +68,8 @@ type TestUser struct {
 	IPAddress net.IP    `json:"network_address,omitempty"`
 
 	// Tests for RFC draft-wright-json-schema-hyperschema-00, section 4
-	Photo []byte `json:"photo,omitempty" jsonschema:"required"`
-	Photo2 Bytes `json:"photo2,omitempty" jsonschema:"required"`
+	Photo  []byte `json:"photo,omitempty" jsonschema:"required"`
+	Photo2 Bytes  `json:"photo2,omitempty" jsonschema:"required"`
 
 	// Tests for jsonpb enum support
 	Feeling ProtoEnum `json:"feeling,omitempty"`
@@ -116,6 +116,10 @@ type Inner struct {
 
 type Bytes []byte
 
+type TestNullable struct {
+	Child1 string `json:"child1" jsonschema:"nullable"`
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
@@ -144,6 +148,7 @@ func TestSchemaGeneration(t *testing.T) {
 		}, "fixtures/custom_type.json"},
 		{&TestUser{}, &Reflector{DoNotReference: true, FullyQualifyTypeNames: true}, "fixtures/no_ref_qual_types.json"},
 		{&Outer{}, &Reflector{ExpandedStruct: true, DoNotReference: true, YAMLEmbeddedStructs: true}, "fixtures/disable_inlining_embedded.json"},
+		{&TestNullable{}, &Reflector{}, "fixtures/nullable.json"},
 	}
 
 	for _, tt := range tests {

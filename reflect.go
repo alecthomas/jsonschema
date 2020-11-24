@@ -329,7 +329,7 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 	}
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
-		name, exist, required := r.reflectFieldName(f)
+		name, exist, required, nullable := r.reflectFieldName(f)
 		// if anonymous and exported type should be processed recursively
 		// current type should inherit properties of anonymous one
 		if name == "" {
@@ -341,6 +341,17 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 
 		property := r.reflectTypeToSchema(definitions, f.Type)
 		property.structKeywordsFromTags(f, st, name)
+
+		if nullable {
+			property = &Type{
+				OneOf: []*Type{
+					property,
+					{
+						Type: "null",
+					},
+				},
+			}
+		}
 
 		st.Properties.Set(name, property)
 		if required {
@@ -578,6 +589,18 @@ func requiredFromJSONSchemaTags(tags []string) bool {
 	return false
 }
 
+func nullableFromJSONSchemaTags(tags []string) bool {
+	if ignoredByJSONSchemaTags(tags) {
+		return false
+	}
+	for _, tag := range tags {
+		if tag == "nullable" {
+			return true
+		}
+	}
+	return false
+}
+
 func ignoredByJSONTags(tags []string) bool {
 	return tags[0] == "-"
 }
@@ -586,7 +609,7 @@ func ignoredByJSONSchemaTags(tags []string) bool {
 	return tags[0] == "-"
 }
 
-func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool) {
+func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool, bool) {
 	jsonTags, exist := f.Tag.Lookup("json")
 	if !exist {
 		jsonTags = f.Tag.Get("yaml")
@@ -595,12 +618,12 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool)
 	jsonTagsList := strings.Split(jsonTags, ",")
 
 	if ignoredByJSONTags(jsonTagsList) {
-		return "", exist, false
+		return "", exist, false, false
 	}
 
 	jsonSchemaTags := strings.Split(f.Tag.Get("jsonschema"), ",")
 	if ignoredByJSONSchemaTags(jsonSchemaTags) {
-		return "", exist, false
+		return "", exist, false, false
 	}
 
 	name := f.Name
@@ -609,6 +632,8 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool)
 	if r.RequiredFromJSONSchemaTags {
 		required = requiredFromJSONSchemaTags(jsonSchemaTags)
 	}
+
+	nullable := nullableFromJSONSchemaTags(jsonSchemaTags)
 
 	if jsonTagsList[0] != "" {
 		name = jsonTagsList[0]
@@ -628,7 +653,7 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool)
 		}
 	}
 
-	return name, exist, required
+	return name, exist, required, nullable
 }
 
 func (s *Schema) MarshalJSON() ([]byte, error) {
