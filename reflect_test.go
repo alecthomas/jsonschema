@@ -69,6 +69,7 @@ type TestUser struct {
 
 	// Tests for RFC draft-wright-json-schema-hyperschema-00, section 4
 	Photo []byte `json:"photo,omitempty" jsonschema:"required"`
+	Photo2 Bytes `json:"photo2,omitempty" jsonschema:"required"`
 
 	// Tests for jsonpb enum support
 	Feeling ProtoEnum `json:"feeling,omitempty"`
@@ -112,6 +113,8 @@ type Outer struct {
 type Inner struct {
 	Foo string `yaml:"foo"`
 }
+
+type Bytes []byte
 
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
