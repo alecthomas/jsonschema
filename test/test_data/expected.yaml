@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/Object",
+  "definitions": {
+    "Object": {
+      "required": [
+        "f1",
+        "f2"
+      ],
+      "properties": {
+        "f1": {
+          "type": "string"
+        },
+        "f2": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
