@@ -529,24 +529,30 @@ func (t *Type) arrayKeywords(tags []string) {
 }
 
 func (t *Type) extraKeywords(tags []string) {
+	if t.Extras == nil {
+		t.Extras = map[string]interface{}{}
+	}
 	for _, tag := range tags {
 		nameValue := strings.Split(tag, "=")
 		if len(nameValue) == 2 {
-			t.setExtra(nameValue[0], nameValue[1])
+			name, value := nameValue[0], nameValue[1]
+			switch name {
+			case "minimum":
+				t.Extras[name], _ = strconv.Atoi(value)
+			default:
+				t.setExtra(name, value)
+			}
 		}
 	}
 }
 
-func (t *Type) setExtra(key, val string) {
-	if t.Extras == nil {
-		t.Extras = map[string]interface{}{}
-	}
+func (t *Type) setExtra(key string, val interface{}) {
 	if existingVal, ok := t.Extras[key]; ok {
 		switch existingVal.(type) {
 		case string:
-			t.Extras[key] = []string{existingVal.(string), val}
+			t.Extras[key] = []string{existingVal.(string), val.(string)}
 		case []string:
-			t.Extras[key] = append(existingVal.([]string), val)
+			t.Extras[key] = append(existingVal.([]string), val.(string))
 		}
 	} else {
 		t.Extras[key] = val

@@ -68,8 +68,8 @@ type TestUser struct {
 	IPAddress net.IP    `json:"network_address,omitempty"`
 
 	// Tests for RFC draft-wright-json-schema-hyperschema-00, section 4
-	Photo []byte `json:"photo,omitempty" jsonschema:"required"`
-	Photo2 Bytes `json:"photo2,omitempty" jsonschema:"required"`
+	Photo  []byte `json:"photo,omitempty" jsonschema:"required"`
+	Photo2 Bytes  `json:"photo2,omitempty" jsonschema:"required"`
 
 	// Tests for jsonpb enum support
 	Feeling ProtoEnum `json:"feeling,omitempty"`
@@ -175,4 +175,23 @@ func TestBaselineUnmarshal(t *testing.T) {
 	actualJSON, _ := json.MarshalIndent(actualSchema, "", "  ")
 
 	require.Equal(t, strings.Replace(string(expectedJSON), `\/`, "/", -1), string(actualJSON))
+}
+
+func TestReflect(t *testing.T) {
+	type Values struct {
+		Value1 int `json:"value1" jsonschema:"minimum=-1"`
+		Value2 int `json:"value2" jsonschema:"minimum=0"`
+		Value3 int `json:"value3" jsonschema:"minimum=1"`
+		Value4 int `json:"value4" jsonschema_extras:"minimum=0"`
+	}
+
+	reflector := &Reflector{}
+	schema := reflector.Reflect(&Values{})
+
+	schemaBytes, err := schema.MarshalJSON()
+	if err != nil {
+		panic(err)
+	}
+
+	t.Logf("Schema:%v", string(schemaBytes))
 }
