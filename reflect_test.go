@@ -190,7 +190,7 @@ func TestReflect(t *testing.T) {
 
 	schemaBytes, err := schema.MarshalJSON()
 	if err != nil {
-		panic(err)
+		t.Fatalf("err:%v", err)
 	}
 
 	t.Logf("Schema:%v", string(schemaBytes))
