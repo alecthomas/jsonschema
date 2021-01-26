@@ -535,27 +535,28 @@ func (t *Type) extraKeywords(tags []string) {
 	for _, tag := range tags {
 		nameValue := strings.Split(tag, "=")
 		if len(nameValue) == 2 {
-			name, value := nameValue[0], nameValue[1]
-			switch name {
-			case "minimum":
-				t.Extras[name], _ = strconv.Atoi(value)
-			default:
-				t.setExtra(name, value)
-			}
+			t.setExtra(nameValue[0], nameValue[1])
 		}
 	}
 }
 
-func (t *Type) setExtra(key string, val interface{}) {
+func (t *Type) setExtra(key, val string) {
 	if existingVal, ok := t.Extras[key]; ok {
 		switch existingVal.(type) {
 		case string:
-			t.Extras[key] = []string{existingVal.(string), val.(string)}
+			t.Extras[key] = []string{existingVal.(string), val}
 		case []string:
-			t.Extras[key] = append(existingVal.([]string), val.(string))
+			t.Extras[key] = append(existingVal.([]string), val)
+		case int:
+			t.Extras[key], _ = strconv.Atoi(val)
 		}
 	} else {
-		t.Extras[key] = val
+		switch key {
+		case "minimum":
+			t.Extras[key], _ = strconv.Atoi(val)
+		default:
+			t.Extras[key] = val
+		}
 	}
 }
 

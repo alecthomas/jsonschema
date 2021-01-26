@@ -179,10 +179,11 @@ func TestBaselineUnmarshal(t *testing.T) {
 
 func TestReflect(t *testing.T) {
 	type Values struct {
-		Value1 int `json:"value1" jsonschema:"minimum=-1"`
-		Value2 int `json:"value2" jsonschema:"minimum=0"`
-		Value3 int `json:"value3" jsonschema:"minimum=1"`
-		Value4 int `json:"value4" jsonschema_extras:"minimum=0"`
+		Value1 int    `json:"value1" jsonschema:"minimum=-1"`
+		Value2 int    `json:"value2" jsonschema:"minimum=0"`
+		Value3 int    `json:"value3" jsonschema:"minimum=1"`
+		Value4 int    `json:"value4" jsonschema_extras:"minimum=0"`
+		Value5 string `json:"value5" jsonschema_extras:"format=json"`
 	}
 
 	reflector := &Reflector{}
