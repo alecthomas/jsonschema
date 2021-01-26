@@ -529,9 +529,6 @@ func (t *Type) arrayKeywords(tags []string) {
 }
 
 func (t *Type) extraKeywords(tags []string) {
-	if t.Extras == nil {
-		t.Extras = map[string]interface{}{}
-	}
 	for _, tag := range tags {
 		nameValue := strings.Split(tag, "=")
 		if len(nameValue) == 2 {
@@ -541,6 +538,9 @@ func (t *Type) extraKeywords(tags []string) {
 }
 
 func (t *Type) setExtra(key, val string) {
+	if t.Extras == nil {
+		t.Extras = map[string]interface{}{}
+	}
 	if existingVal, ok := t.Extras[key]; ok {
 		switch existingVal.(type) {
 		case string:

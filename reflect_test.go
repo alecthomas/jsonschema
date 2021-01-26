@@ -177,7 +177,7 @@ func TestBaselineUnmarshal(t *testing.T) {
 	require.Equal(t, strings.Replace(string(expectedJSON), `\/`, "/", -1), string(actualJSON))
 }
 
-func TestReflect(t *testing.T) {
+func TestPrintSchema(t *testing.T) {
 	type Values struct {
 		Value1 int    `json:"value1" jsonschema:"minimum=-1"`
 		Value2 int    `json:"value2" jsonschema:"minimum=0"`
@@ -194,5 +194,5 @@ func TestReflect(t *testing.T) {
 		t.Fatalf("err:%v", err)
 	}
 
-	t.Logf("Schema:%v", string(schemaBytes))
+	t.Logf("JSON Schema:%v", string(schemaBytes))
 }
