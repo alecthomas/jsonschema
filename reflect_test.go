@@ -177,22 +177,17 @@ func TestBaselineUnmarshal(t *testing.T) {
 	require.Equal(t, strings.Replace(string(expectedJSON), `\/`, "/", -1), string(actualJSON))
 }
 
-func TestPrintSchema(t *testing.T) {
+func TestMinimumValue(t *testing.T) {
+	expectedJSON, err := ioutil.ReadFile("fixtures/schema_with_minimum.json")
+	require.NoError(t, err)
+
 	type Values struct {
-		Value1 int    `json:"value1" jsonschema:"minimum=-1"`
-		Value2 int    `json:"value2" jsonschema:"minimum=0"`
-		Value3 int    `json:"value3" jsonschema:"minimum=1"`
-		Value4 int    `json:"value4" jsonschema_extras:"minimum=0"`
-		Value5 string `json:"value5" jsonschema_extras:"format=json"`
+		Value int `json:"value4" jsonschema_extras:"minimum=0"`
 	}
 
 	reflector := &Reflector{}
 	schema := reflector.Reflect(&Values{})
+	schemaBytes, _ := json.MarshalIndent(schema, "", "    ")
 
-	schemaBytes, err := schema.MarshalJSON()
-	if err != nil {
-		t.Fatalf("err:%v", err)
-	}
-
-	t.Logf("JSON Schema:%v", string(schemaBytes))
+	require.Equal(t, string(expectedJSON), string(schemaBytes))
 }
