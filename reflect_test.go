@@ -114,6 +114,9 @@ type Inner struct {
 	Foo string `yaml:"foo"`
 }
 
+type MinValue struct {
+	Value int `json:"value4" jsonschema_extras:"minimum=0"`
+}
 type Bytes []byte
 
 func TestSchemaGeneration(t *testing.T) {
@@ -144,6 +147,7 @@ func TestSchemaGeneration(t *testing.T) {
 		}, "fixtures/custom_type.json"},
 		{&TestUser{}, &Reflector{DoNotReference: true, FullyQualifyTypeNames: true}, "fixtures/no_ref_qual_types.json"},
 		{&Outer{}, &Reflector{ExpandedStruct: true, DoNotReference: true, YAMLEmbeddedStructs: true}, "fixtures/disable_inlining_embedded.json"},
+		{&MinValue{}, &Reflector{}, "fixtures/schema_with_minimum.json"},
 	}
 
 	for _, tt := range tests {
@@ -175,19 +179,4 @@ func TestBaselineUnmarshal(t *testing.T) {
 	actualJSON, _ := json.MarshalIndent(actualSchema, "", "  ")
 
 	require.Equal(t, strings.Replace(string(expectedJSON), `\/`, "/", -1), string(actualJSON))
-}
-
-func TestMinimumValue(t *testing.T) {
-	expectedJSON, err := ioutil.ReadFile("fixtures/schema_with_minimum.json")
-	require.NoError(t, err)
-
-	type Values struct {
-		Value int `json:"value4" jsonschema_extras:"minimum=0"`
-	}
-
-	reflector := &Reflector{}
-	schema := reflector.Reflect(&Values{})
-	schemaBytes, _ := json.MarshalIndent(schema, "", "    ")
-
-	require.Equal(t, string(expectedJSON), string(schemaBytes))
 }
