@@ -119,6 +119,10 @@ type MinValue struct {
 }
 type Bytes []byte
 
+type TestNullable struct {
+	Child1 string `json:"child1" jsonschema:"nullable"`
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
@@ -148,6 +152,7 @@ func TestSchemaGeneration(t *testing.T) {
 		{&TestUser{}, &Reflector{DoNotReference: true, FullyQualifyTypeNames: true}, "fixtures/no_ref_qual_types.json"},
 		{&Outer{}, &Reflector{ExpandedStruct: true, DoNotReference: true, YAMLEmbeddedStructs: true}, "fixtures/disable_inlining_embedded.json"},
 		{&MinValue{}, &Reflector{}, "fixtures/schema_with_minimum.json"},
+		{&TestNullable{}, &Reflector{}, "fixtures/nullable.json"},
 	}
 
 	for _, tt := range tests {
