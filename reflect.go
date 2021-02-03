@@ -558,9 +558,16 @@ func (t *Type) setExtra(key, val string) {
 			t.Extras[key] = []string{existingVal.(string), val}
 		case []string:
 			t.Extras[key] = append(existingVal.([]string), val)
+		case int:
+			t.Extras[key], _ = strconv.Atoi(val)
 		}
 	} else {
-		t.Extras[key] = val
+		switch key {
+		case "minimum":
+			t.Extras[key], _ = strconv.Atoi(val)
+		default:
+			t.Extras[key] = val
+		}
 	}
 }
 

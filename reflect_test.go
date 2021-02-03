@@ -114,6 +114,9 @@ type Inner struct {
 	Foo string `yaml:"foo"`
 }
 
+type MinValue struct {
+	Value int `json:"value4" jsonschema_extras:"minimum=0"`
+}
 type Bytes []byte
 
 type TestNullable struct {
@@ -148,6 +151,7 @@ func TestSchemaGeneration(t *testing.T) {
 		}, "fixtures/custom_type.json"},
 		{&TestUser{}, &Reflector{DoNotReference: true, FullyQualifyTypeNames: true}, "fixtures/no_ref_qual_types.json"},
 		{&Outer{}, &Reflector{ExpandedStruct: true, DoNotReference: true, YAMLEmbeddedStructs: true}, "fixtures/disable_inlining_embedded.json"},
+		{&MinValue{}, &Reflector{}, "fixtures/schema_with_minimum.json"},
 		{&TestNullable{}, &Reflector{}, "fixtures/nullable.json"},
 	}
 
