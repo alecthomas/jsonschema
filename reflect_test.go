@@ -123,6 +123,10 @@ type TestNullable struct {
 	Child1 string `json:"child1" jsonschema:"nullable"`
 }
 
+type TestYamlInline struct {
+	Inlined Inner `yaml:",inline"`
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
@@ -153,6 +157,8 @@ func TestSchemaGeneration(t *testing.T) {
 		{&Outer{}, &Reflector{ExpandedStruct: true, DoNotReference: true, YAMLEmbeddedStructs: true}, "fixtures/disable_inlining_embedded.json"},
 		{&MinValue{}, &Reflector{}, "fixtures/schema_with_minimum.json"},
 		{&TestNullable{}, &Reflector{}, "fixtures/nullable.json"},
+		{&TestYamlInline{}, &Reflector{YAMLEmbeddedStructs: true}, "fixtures/yaml_inline_embed.json"},
+		{&TestYamlInline{}, &Reflector{}, "fixtures/yaml_inline_embed.json"},
 	}
 
 	for _, tt := range tests {

@@ -332,11 +332,11 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 	}
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
-		name, exist, required, nullable := r.reflectFieldName(f)
+		name, shouldEmbed, required, nullable := r.reflectFieldName(f)
 		// if anonymous and exported type should be processed recursively
 		// current type should inherit properties of anonymous one
 		if name == "" {
-			if f.Anonymous && !exist {
+			if shouldEmbed {
 				r.reflectStructFields(st, definitions, f.Type)
 			}
 			continue
@@ -611,6 +611,15 @@ func nullableFromJSONSchemaTags(tags []string) bool {
 	return false
 }
 
+func inlineYAMLTags(tags []string) bool {
+	for _, tag := range tags {
+		if tag == "inline" {
+			return true
+		}
+	}
+	return false
+}
+
 func ignoredByJSONTags(tags []string) bool {
 	return tags[0] == "-"
 }
@@ -621,19 +630,22 @@ func ignoredByJSONSchemaTags(tags []string) bool {
 
 func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool, bool) {
 	jsonTags, exist := f.Tag.Lookup("json")
+	yamlTags, yamlExist := f.Tag.Lookup("yaml")
 	if !exist {
-		jsonTags = f.Tag.Get("yaml")
+		jsonTags = yamlTags
+		exist = yamlExist
 	}
 
 	jsonTagsList := strings.Split(jsonTags, ",")
+	yamlTagsList := strings.Split(yamlTags, ",")
 
 	if ignoredByJSONTags(jsonTagsList) {
-		return "", exist, false, false
+		return "", false, false, false
 	}
 
 	jsonSchemaTags := strings.Split(f.Tag.Get("jsonschema"), ",")
 	if ignoredByJSONSchemaTags(jsonSchemaTags) {
-		return "", exist, false, false
+		return "", false, false, false
 	}
 
 	name := f.Name
@@ -654,16 +666,24 @@ func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool,
 		name = ""
 	}
 
+	embed := false
+
 	// field anonymous but without json tag should be inherited by current type
 	if f.Anonymous && !exist {
 		if !r.YAMLEmbeddedStructs {
 			name = ""
+			embed = true
 		} else {
 			name = strings.ToLower(name)
 		}
 	}
 
-	return name, exist, required, nullable
+	if yamlExist && inlineYAMLTags(yamlTagsList) {
+		name = ""
+		embed = true
+	}
+
+	return name, embed, required, nullable
 }
 
 func (s *Schema) MarshalJSON() ([]byte, error) {
