@@ -130,6 +130,9 @@ type Reflector struct {
 
 	// TypeMapper is a function that can be used to map custom Go types to jsconschema types.
 	TypeMapper func(reflect.Type) *Type
+
+	// TypeNamer allows customizing of type names
+	TypeNamer func(reflect.Type) string
 }
 
 // Reflect reflects to Schema from a value.
@@ -707,6 +710,11 @@ func (t *Type) MarshalJSON() ([]byte, error) {
 }
 
 func (r *Reflector) typeName(t reflect.Type) string {
+	if r.TypeNamer != nil {
+		if name := r.TypeNamer(t); name != "" {
+			return name
+		}
+	}
 	if r.FullyQualifyTypeNames {
 		return t.PkgPath() + "." + t.Name()
 	}
