@@ -133,6 +133,9 @@ type Reflector struct {
 
 	// TypeNamer allows customizing of type names
 	TypeNamer func(reflect.Type) string
+
+	// AdditionalFields allows adding structfields for a given type
+	AdditionalFields func(reflect.Type) []reflect.StructField
 }
 
 // Reflect reflects to Schema from a value.
@@ -330,8 +333,8 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 	if t.Kind() != reflect.Struct {
 		return
 	}
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
+
+	handleField := func (f reflect.StructField) {
 		name, shouldEmbed, required, nullable := r.reflectFieldName(f)
 		// if anonymous and exported type should be processed recursively
 		// current type should inherit properties of anonymous one
@@ -339,7 +342,7 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 			if shouldEmbed {
 				r.reflectStructFields(st, definitions, f.Type)
 			}
-			continue
+			return
 		}
 
 		property := r.reflectTypeToSchema(definitions, f.Type)
@@ -359,6 +362,18 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 		st.Properties.Set(name, property)
 		if required {
 			st.Required = append(st.Required, name)
+		}
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		handleField(f)
+	}
+	if r.AdditionalFields != nil {
+		if af := r.AdditionalFields(t); af != nil {
+			for _, sf := range af {
+				handleField(sf)
+			}
 		}
 	}
 }

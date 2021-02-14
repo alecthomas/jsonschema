@@ -159,6 +159,18 @@ func TestSchemaGeneration(t *testing.T) {
 		{&TestNullable{}, &Reflector{}, "fixtures/nullable.json"},
 		{&TestYamlInline{}, &Reflector{YAMLEmbeddedStructs: true}, "fixtures/yaml_inline_embed.json"},
 		{&TestYamlInline{}, &Reflector{}, "fixtures/yaml_inline_embed.json"},
+		{&GrandfatherType{}, &Reflector{
+			AdditionalFields: func(r reflect.Type) []reflect.StructField {
+				return []reflect.StructField{
+					{
+						Name:      "Addr",
+						Type:      reflect.TypeOf((*net.IP)(nil)).Elem(),
+						Tag:       "json:\"ip_addr\"",
+						Anonymous: false,
+					},
+				}
+			},
+		}, "fixtures/custom_additional.json"},
 	}
 
 	for _, tt := range tests {
