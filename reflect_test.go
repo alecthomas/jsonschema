@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -127,6 +128,22 @@ type TestYamlInline struct {
 	Inlined Inner `yaml:",inline"`
 }
 
+type TestEmbedStruct struct {
+	Name  string
+	Embed struct {
+		Hello string
+	}
+	OtherEmbed struct {
+		Bye string
+	}
+	ArrayEmbed []struct {
+		ArrElem string
+	}
+	MapEmbed map[string]struct {
+		MpElem string
+	}
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
@@ -171,6 +188,20 @@ func TestSchemaGeneration(t *testing.T) {
 				}
 			},
 		}, "fixtures/custom_additional.json"},
+		{&TestEmbedStruct{}, &Reflector{
+			MissingTypeNameResolver: func(fieldName string) string {
+				switch fieldName {
+				case "OtherEmbed":
+					return "Other"
+				case "ArrayEmbed":
+					return "A"
+				case "MapEmbed":
+					return "B"
+				}
+
+				return fieldName
+			},
+		}, "fixtures/embed_struct.json"},
 	}
 
 	for _, tt := range tests {
@@ -187,6 +218,7 @@ func TestSchemaGeneration(t *testing.T) {
 
 			expectedJSON, _ := json.MarshalIndent(expectedSchema, "", "  ")
 			actualJSON, _ := json.MarshalIndent(actualSchema, "", "  ")
+			fmt.Println(string(actualJSON))
 			require.Equal(t, string(expectedJSON), string(actualJSON))
 		})
 	}

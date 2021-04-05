@@ -134,8 +134,15 @@ type Reflector struct {
 	// TypeNamer allows customizing of type names
 	TypeNamer func(reflect.Type) string
 
+	// MissingTypeNameResolver allows overriding type names for a types without exact name
+	// eg. array, map with inline struct or just inline struct field
+	MissingTypeNameResolver func(fieldName string) string
+
 	// AdditionalFields allows adding structfields for a given type
 	AdditionalFields func(reflect.Type) []reflect.StructField
+
+	// fieldNames holds names of a struct fields
+	fieldNames map[reflect.Type]string
 }
 
 // Reflect reflects to Schema from a value.
@@ -145,6 +152,8 @@ func (r *Reflector) Reflect(v interface{}) *Schema {
 
 // ReflectFromType generates root schema
 func (r *Reflector) ReflectFromType(t reflect.Type) *Schema {
+	r.fieldNames = make(map[reflect.Type]string)
+
 	definitions := Definitions{}
 	if r.ExpandedStruct {
 		st := &Type{
@@ -235,6 +244,7 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		}
 
 	case reflect.Map:
+		r.fieldNames[t.Elem()] = r.fieldNames[t]
 		rt := &Type{
 			Type: "object",
 			PatternProperties: map[string]*Type{
@@ -255,6 +265,7 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			returnType.Media = &Type{BinaryEncoding: "base64"}
 			return returnType
 		}
+		r.fieldNames[t.Elem()] = r.fieldNames[t]
 		returnType.Type = "array"
 		returnType.Items = r.reflectTypeToSchema(definitions, t.Elem())
 		return returnType
@@ -334,7 +345,7 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 		return
 	}
 
-	handleField := func (f reflect.StructField) {
+	handleField := func(f reflect.StructField) {
 		name, shouldEmbed, required, nullable := r.reflectFieldName(f)
 		// if anonymous and exported type should be processed recursively
 		// current type should inherit properties of anonymous one
@@ -344,6 +355,7 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 			}
 			return
 		}
+		r.fieldNames[f.Type] = name
 
 		property := r.reflectTypeToSchema(definitions, f.Type)
 		property.structKeywordsFromTags(f, st, name)
@@ -750,8 +762,18 @@ func (r *Reflector) typeName(t reflect.Type) string {
 			return name
 		}
 	}
-	if r.FullyQualifyTypeNames {
-		return t.PkgPath() + "." + t.Name()
+
+	name := t.Name()
+	if name == "" {
+		name = r.fieldNames[t]
+
+		if r.MissingTypeNameResolver != nil {
+			name = r.MissingTypeNameResolver(name)
+		}
 	}
-	return t.Name()
+
+	if r.FullyQualifyTypeNames {
+		return t.PkgPath() + "." + name
+	}
+	return name
 }

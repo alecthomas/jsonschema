@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/TestEmbedStruct",
+  "definitions": {
+    "A": {
+      "required": [
+        "ArrElem"
+      ],
+      "properties": {
+        "ArrElem": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "B": {
+      "required": [
+        "MpElem"
+      ],
+      "properties": {
+        "MpElem": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TestEmbedStruct": {
+      "required": [
+        "Name",
+        "Embed",
+        "OtherEmbed",
+        "ArrayEmbed",
+        "MapEmbed"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Embed": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/Embed"
+        },
+        "OtherEmbed": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/Other"
+        },
+        "ArrayEmbed": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/A"
+          },
+          "type": "array"
+        },
+        "MapEmbed": {
+          "patternProperties": {
+            ".*": {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "$ref": "#/definitions/B"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Embed": {
+      "required": [
+        "Hello"
+      ],
+      "properties": {
+        "Hello": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Other": {
+      "required": [
+        "Bye"
+      ],
+      "properties": {
+        "Bye": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
