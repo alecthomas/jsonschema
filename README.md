@@ -188,3 +188,59 @@ will output:
   }
 }
 ```
+
+### PreferYAMLSchema
+
+JSON schemas can also be used to validate YAML, however YAML frequently uses
+different identifiers to JSON indicated by the `yaml:` tag. The `Reflector` will
+by default prefer `json:` tags over `yaml:` tags (and only use the latter if the
+former are not present). This behavior can be changed via the `PreferYAMLSchema`
+flag, that will switch this behavior: `yaml:` tags will be preferred over
+`json:` tags.
+
+With `PreferYAMLSchema: true`, the following struct:
+```go
+type Person struct {
+	FirstName string `json:"FirstName" yaml:"first_name"`
+}
+```
+
+would result in this schema:
+```json
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/TestYamlAndJson",
+  "definitions": {
+    "Person": {
+      "required": ["first_name"],
+      "properties": {
+        "first_name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
+```
+
+whereas without the flag one obtains:
+```json
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/TestYamlAndJson",
+  "definitions": {
+    "Person": {
+      "required": ["FirstName"],
+      "properties": {
+        "first_name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
+```

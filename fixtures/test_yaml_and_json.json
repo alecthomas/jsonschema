@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/TestYamlAndJson",
+  "definitions": {
+    "TestYamlAndJson": {
+      "required": ["FirstName", "LastName", "age"],
+      "properties": {
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "age": {
+          "type": "integer"
+        },
+        "MiddleName": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}

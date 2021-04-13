@@ -106,6 +106,10 @@ type Reflector struct {
 	// used with yaml.Marshal/Unmarshal.
 	YAMLEmbeddedStructs bool
 
+	// Prefer yaml: tags over json: tags to generate the schema even if json: tags
+	// are present
+	PreferYAMLSchema bool
+
 	// ExpandedStruct will cause the toplevel definitions of the schema not
 	// be referenced itself to a definition.
 	ExpandedStruct bool
@@ -334,7 +338,7 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 		return
 	}
 
-	handleField := func (f reflect.StructField) {
+	handleField := func(f reflect.StructField) {
 		name, shouldEmbed, required, nullable := r.reflectFieldName(f)
 		// if anonymous and exported type should be processed recursively
 		// current type should inherit properties of anonymous one
@@ -646,7 +650,7 @@ func ignoredByJSONSchemaTags(tags []string) bool {
 func (r *Reflector) reflectFieldName(f reflect.StructField) (string, bool, bool, bool) {
 	jsonTags, exist := f.Tag.Lookup("json")
 	yamlTags, yamlExist := f.Tag.Lookup("yaml")
-	if !exist {
+	if !exist || r.PreferYAMLSchema {
 		jsonTags = yamlTags
 		exist = yamlExist
 	}
