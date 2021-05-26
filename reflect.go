@@ -30,6 +30,15 @@ type Schema struct {
 	Definitions Definitions
 }
 
+// customSchemaType is used to detect if the structure provides it's own
+// custom Schema Type definition to use instead. Very useful for situations
+// where there are custom JSON Marshal and Unmarshal methods.
+type customSchemaType interface {
+	JSONSchemaType() *Type
+}
+
+var customStructType = reflect.TypeOf((*customSchemaType)(nil)).Elem()
+
 // Type represents a JSON Schema object type.
 type Type struct {
 	// RFC draft-wright-json-schema-00
@@ -309,16 +318,24 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 
 		}
 	}
-	st := &Type{
-		Type:                 "object",
-		Properties:           orderedmap.New(),
-		AdditionalProperties: []byte("false"),
+	var st *Type
+	if t.Implements(customStructType) {
+		v := reflect.New(t)
+		o := v.Interface().(customSchemaType)
+		st = o.JSONSchemaType()
+		definitions[r.typeName(t)] = st
+	} else {
+		st = &Type{
+			Type:                 "object",
+			Properties:           orderedmap.New(),
+			AdditionalProperties: []byte("false"),
+		}
+		if r.AllowAdditionalProperties {
+			st.AdditionalProperties = []byte("true")
+		}
+		definitions[r.typeName(t)] = st
+		r.reflectStructFields(st, definitions, t)
 	}
-	if r.AllowAdditionalProperties {
-		st.AdditionalProperties = []byte("true")
-	}
-	definitions[r.typeName(t)] = st
-	r.reflectStructFields(st, definitions, t)
 
 	if r.DoNotReference {
 		return st

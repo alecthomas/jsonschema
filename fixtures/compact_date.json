@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/CompactDate",
+  "definitions": {
+    "CompactDate": {
+      "pattern": "^[0-9]{4}-[0-1][0-9]$",
+      "type": "string",
+      "title": "Compact Date",
+      "description": "Short date that only includes year and month"
+    }
+  }
+}

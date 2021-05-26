@@ -244,3 +244,69 @@ whereas without the flag one obtains:
   }
 }
 ```
+
+### Custom Type Definitions
+
+Sometimes it can be useful to have custom JSON Marshal and Unmarshal methods in your structs that automatically convert for example a string into an object.
+
+To override auto-generating an object type for your struct, implement the `JSONSchemaType() *Type` method and whatever is defined will be provided in the schema definitions.
+
+Take the following simplified example of a `CompactDate` that only includes the Year and Month:
+
+```go
+type CompactDate struct {
+	Year  int
+	Month int
+}
+
+func (d *CompactDate) UnmarshalJSON(data []byte) error {
+  if len(data) != 9 {
+    return errors.New("invalid compact date length")
+  }
+  var err error
+  d.Year, err = strconv.Atoi(string(data[1:5]))
+  if err != nil {
+    return err
+  }
+  d.Month, err = strconv.Atoi(string(data[7:8]))
+  if err != nil {
+    return err
+  }
+  return nil
+}
+
+func (d *CompactDate) MarshalJSON() ([]byte, error) {
+  buf := new(bytes.Buffer)
+  buf.WriteByte('"')
+  buf.WriteString(fmt.Sprintf("%d-%02d", d.Year, d.Month))
+  buf.WriteByte('"')
+  return buf.Bytes(), nil
+}
+
+func (CompactDate) JSONSchemaType() *Type {
+	return &Type{
+		Type:        "string",
+		Title:       "Compact Date",
+		Description: "Short date that only includes year and month",
+		Pattern:     "^[0-9]{4}-[0-1][0-9]$",
+	}
+}
+```
+
+The resulting schema generated for this struct would look like:
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/CompactDate",
+  "definitions": {
+    "CompactDate": {
+      "pattern": "^[0-9]{4}-[0-1][0-9]$",
+      "type": "string",
+      "title": "Compact Date",
+      "description": "Short date that only includes year and month"
+    }
+  }
+}
+```
+

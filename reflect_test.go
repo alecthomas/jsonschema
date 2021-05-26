@@ -134,6 +134,20 @@ type TestYamlAndJson struct {
 	MiddleName string `yaml:"middle_name,omitempty" json:"MiddleName,omitempty"`
 }
 
+type CompactDate struct {
+	Year  int
+	Month int
+}
+
+func (CompactDate) JSONSchemaType() *Type {
+	return &Type{
+		Type:        "string",
+		Title:       "Compact Date",
+		Description: "Short date that only includes year and month",
+		Pattern:     "^[0-9]{4}-[0-1][0-9]$",
+	}
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
@@ -180,6 +194,7 @@ func TestSchemaGeneration(t *testing.T) {
 		}, "fixtures/custom_additional.json"},
 		{&TestYamlAndJson{}, &Reflector{PreferYAMLSchema: true}, "fixtures/test_yaml_and_json_prefer_yaml.json"},
 		{&TestYamlAndJson{}, &Reflector{}, "fixtures/test_yaml_and_json.json"},
+		{&CompactDate{}, &Reflector{}, "fixtures/compact_date.json"},
 	}
 
 	for _, tt := range tests {
