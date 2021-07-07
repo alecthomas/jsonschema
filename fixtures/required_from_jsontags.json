@@ -182,6 +182,9 @@
             "type": "number"
           },
           "type": "array"
+        },
+        "raw": {
+          "additionalProperties": true
         }
       },
       "additionalProperties": false,

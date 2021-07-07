@@ -207,6 +207,9 @@ var (
 // Byte slices will be encoded as base64
 var byteSliceType = reflect.TypeOf([]byte(nil))
 
+// Except for json.RawMessage
+var rawMessageType = reflect.TypeOf(json.RawMessage{})
+
 // Go code generated from protobuf enum types should fulfil this interface.
 type protoEnum interface {
 	EnumDescriptor() ([]byte, []int)
@@ -278,6 +281,11 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 
 	case reflect.Slice, reflect.Array:
 		returnType := &Type{}
+		if t == rawMessageType {
+			return &Type{
+				AdditionalProperties: []byte("true"),
+			}
+		}
 		if t.Kind() == reflect.Array {
 			returnType.MinItems = t.Len()
 			returnType.MaxItems = returnType.MinItems

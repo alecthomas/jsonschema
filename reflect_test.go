@@ -88,6 +88,9 @@ type TestUser struct {
 	Roles      []string  `json:"roles" jsonschema:"enum=admin,enum=moderator,enum=user"`
 	Priorities []int     `json:"priorities,omitempty" jsonschema:"enum=-1,enum=0,enum=1,enun=2"`
 	Offsets    []float64 `json:"offsets,omitempty" jsonschema:"enum=1.570796,enum=3.141592,enum=6.283185"`
+
+	// Test for raw JSON
+	Raw json.RawMessage `json:"raw"`
 }
 
 type CustomTime time.Time
