@@ -12,7 +12,8 @@
     "email",
     "Baz",
     "color",
-    "roles"
+    "roles",
+    "raw"
   ],
   "properties": {
     "some_base_property": {
@@ -182,6 +183,9 @@
         "type": "number"
       },
       "type": "array"
+    },
+    "raw": {
+      "additionalProperties": true
     }
   },
   "additionalProperties": false,
@@ -213,7 +217,8 @@
         "email",
         "Baz",
         "color",
-        "roles"
+        "roles",
+        "raw"
       ],
       "properties": {
         "some_base_property": {
@@ -383,6 +388,9 @@
             "type": "number"
           },
           "type": "array"
+        },
+        "raw": {
+          "additionalProperties": true
         }
       },
       "additionalProperties": false,
