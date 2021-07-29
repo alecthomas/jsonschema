@@ -39,6 +39,15 @@ type customSchemaType interface {
 
 var customStructType = reflect.TypeOf((*customSchemaType)(nil)).Elem()
 
+// customSchemaGetFieldDocString
+type customSchemaGetFieldDocString interface {
+	GetFieldDocString(fieldName string) string
+}
+
+type customGetFieldDocString func(fieldName string) string
+
+var customStructGetFieldDocString = reflect.TypeOf((*customSchemaGetFieldDocString)(nil)).Elem()
+
 // Type represents a JSON Schema object type.
 type Type struct {
 	// RFC draft-wright-json-schema-00
@@ -355,6 +364,13 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 		return
 	}
 
+	var getFieldDocString customGetFieldDocString
+	if t.Implements(customStructGetFieldDocString) {
+		v := reflect.New(t)
+		o := v.Interface().(customSchemaGetFieldDocString)
+		getFieldDocString = o.GetFieldDocString
+	}
+
 	handleField := func(f reflect.StructField) {
 		name, shouldEmbed, required, nullable := r.reflectFieldName(f)
 		// if anonymous and exported type should be processed recursively
@@ -368,6 +384,9 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 
 		property := r.reflectTypeToSchema(definitions, f.Type)
 		property.structKeywordsFromTags(f, st, name)
+		if getFieldDocString != nil {
+			property.Description = getFieldDocString(f.Name)
+		}
 
 		if nullable {
 			property = &Type{
