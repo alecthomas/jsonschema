@@ -11,7 +11,8 @@
     "age",
     "email",
     "Baz",
-    "color"
+    "color",
+    "roles"
   ],
   "properties": {
     "some_base_property": {
@@ -148,6 +149,39 @@
         2
       ],
       "type": "number"
+    },
+    "roles": {
+      "items": {
+        "enum": [
+          "admin",
+          "moderator",
+          "user"
+        ],
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "priorities": {
+      "items": {
+        "enum": [
+          -1,
+          0,
+          1
+        ],
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "offsets": {
+      "items": {
+        "enum": [
+          1.570796,
+          3.141592,
+          6.283185
+        ],
+        "type": "number"
+      },
+      "type": "array"
     }
   },
   "additionalProperties": false,
@@ -178,7 +212,8 @@
         "age",
         "email",
         "Baz",
-        "color"
+        "color",
+        "roles"
       ],
       "properties": {
         "some_base_property": {
@@ -315,6 +350,39 @@
             2
           ],
           "type": "number"
+        },
+        "roles": {
+          "items": {
+            "enum": [
+              "admin",
+              "moderator",
+              "user"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "priorities": {
+          "items": {
+            "enum": [
+              -1,
+              0,
+              1
+            ],
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "offsets": {
+          "items": {
+            "enum": [
+              1.570796,
+              3.141592,
+              6.283185
+            ],
+            "type": "number"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,

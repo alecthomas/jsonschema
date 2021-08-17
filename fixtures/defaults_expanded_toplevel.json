@@ -12,7 +12,8 @@
     "age",
     "email",
     "Baz",
-    "color"
+    "color",
+    "roles"
   ],
   "properties": {
     "some_base_property": {
@@ -35,17 +36,17 @@
       "type": "integer"
     },
     "name": {
-        "maxLength": 20,
-        "minLength": 1,
-        "pattern": ".*",
-        "type": "string",
-        "title": "the name",
-        "description": "this is a property",
-        "default": "alex",
-        "examples": [
-          "joe",
-          "lucy"
-        ]
+      "maxLength": 20,
+      "minLength": 1,
+      "pattern": ".*",
+      "type": "string",
+      "title": "the name",
+      "description": "this is a property",
+      "default": "alex",
+      "examples": [
+        "joe",
+        "lucy"
+      ]
     },
     "friends": {
       "items": {
@@ -99,7 +100,7 @@
         }
       ]
     },
-    "age":{
+    "age": {
       "maximum": 120,
       "exclusiveMaximum": true,
       "minimum": 18,
@@ -112,10 +113,10 @@
     },
     "Baz": {
       "type": "string",
-       "foo": [
-          "bar",
-          "bar1"
-        ],
+      "foo": [
+        "bar",
+        "bar1"
+      ],
       "hello": "world"
     },
     "color": {
@@ -141,6 +142,39 @@
         2.0
       ],
       "type": "number"
+    },
+    "roles": {
+      "items": {
+        "enum": [
+          "admin",
+          "moderator",
+          "user"
+        ],
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "priorities": {
+      "items": {
+        "enum": [
+          -1,
+          0,
+          1
+        ],
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "offsets": {
+      "items": {
+        "enum": [
+          1.570796,
+          3.141592,
+          6.283185
+        ],
+        "type": "number"
+      },
+      "type": "array"
     }
   },
   "additionalProperties": false,
