@@ -83,6 +83,11 @@ type TestUser struct {
 	Color      string  `json:"color" jsonschema:"enum=red,enum=green,enum=blue"`
 	Rank       int     `json:"rank,omitempty" jsonschema:"enum=1,enum=2,enum=3"`
 	Multiplier float64 `json:"mult,omitempty" jsonschema:"enum=1.0,enum=1.5,enum=2.0"`
+
+	// Tests for enum tags on slices
+	Roles      []string  `json:"roles" jsonschema:"enum=admin,enum=moderator,enum=user"`
+	Priorities []int     `json:"priorities,omitempty" jsonschema:"enum=-1,enum=0,enum=1,enun=2"`
+	Offsets    []float64 `json:"offsets,omitempty" jsonschema:"enum=1.570796,enum=3.141592,enum=6.283185"`
 }
 
 type CustomTime time.Time
