@@ -246,7 +246,6 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 
 	switch t.Kind() {
 	case reflect.Struct:
-
 		switch t {
 		case timeType: // date-time RFC section 7.3.1
 			return &Type{Type: "string", Format: "date-time"}
@@ -257,6 +256,17 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		}
 
 	case reflect.Map:
+		var i int
+		if t.Key() == reflect.TypeOf(i) {
+			rt := &Type{
+				Type: "object",
+				PatternProperties: map[string]*Type{
+					"^[0-9]+$": r.reflectTypeToSchema(definitions, t.Elem()),
+				},
+				AdditionalProperties: []byte("false"),
+			}
+			return rt
+		}
 		rt := &Type{
 			Type: "object",
 			PatternProperties: map[string]*Type{
