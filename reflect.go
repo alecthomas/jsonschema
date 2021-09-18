@@ -256,8 +256,8 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		}
 
 	case reflect.Map:
-		var i int
-		if t.Key() == reflect.TypeOf(i) {
+		switch t.Key().Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			rt := &Type{
 				Type: "object",
 				PatternProperties: map[string]*Type{
@@ -266,7 +266,17 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 				AdditionalProperties: []byte("false"),
 			}
 			return rt
+		case reflect.Float32, reflect.Float64:
+			rt := &Type{
+				Type: "object",
+				PatternProperties: map[string]*Type{
+					"^[-+]?[0-9]*\\.?[0-9]+$": r.reflectTypeToSchema(definitions, t.Elem()),
+				},
+				AdditionalProperties: []byte("false"),
+			}
+			return rt
 		}
+
 		rt := &Type{
 			Type: "object",
 			PatternProperties: map[string]*Type{
