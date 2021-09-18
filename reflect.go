@@ -238,8 +238,7 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 	// Defined format types for JSON Schema Validation
 	// RFC draft-wright-json-schema-validation-00, section 7.3
 	// TODO email RFC section 7.3.2, hostname RFC section 7.3.3, uriref RFC section 7.3.7
-	switch t {
-	case ipType:
+	if t == ipType {
 		// TODO differentiate ipv4 and ipv6 RFC section 7.3.4, 7.3.5
 		return &Type{Type: "string", Format: "ipv4"} // ipv4 RFC section 7.3.4
 	}
@@ -633,11 +632,11 @@ func (t *Type) setExtra(key, val string) {
 		t.Extras = map[string]interface{}{}
 	}
 	if existingVal, ok := t.Extras[key]; ok {
-		switch existingVal.(type) {
+		switch existingVal := existingVal.(type) {
 		case string:
-			t.Extras[key] = []string{existingVal.(string), val}
+			t.Extras[key] = []string{existingVal, val}
 		case []string:
-			t.Extras[key] = append(existingVal.([]string), val)
+			t.Extras[key] = append(existingVal, val)
 		case int:
 			t.Extras[key], _ = strconv.Atoi(val)
 		}

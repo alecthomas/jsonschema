@@ -1,20 +1,15 @@
----
 on: [push, pull_request]
-
+name: CI
 jobs:
   test:
+    name: Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go: ['1.16', '1.15', '1.14', '1.13']
-
-    name: build and test
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup go
-        uses: actions/setup-go@v1
-        with:
-          go-version: ${{ matrix.go }}
-
-      - run: go get -t -v ./...
-      - run: go test -v ./...
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Init Hermit
+        run: ./bin/hermit env --raw >> $GITHUB_ENV
+      - name: Test
+        run: go test ./...
+      - name: Lint
+        run: golangci-lint run
