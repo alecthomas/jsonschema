@@ -1,8 +1,6 @@
 # Go JSON Schema Reflection
 
-[![Build Status](https://travis-ci.org/alecthomas/jsonschema.png)](https://travis-ci.org/alecthomas/jsonschema)
-[![Continous Integration](https://github.com/alecthomas/jsonschema/actions/workflows/ci.yml/badge.svg)](https://github.com/alecthomas/jsonschema/actions/workflows/ci.yml)
-[![Gitter chat](https://badges.gitter.im/alecthomas.png)](https://gitter.im/alecthomas/Lobby)
+[![CI](https://github.com/alecthomas/jsonschema/actions/workflows/ci.yml/badge.svg)](https://github.com/alecthomas/jsonschema/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/alecthomas/jsonschema)](https://goreportcard.com/report/github.com/alecthomas/jsonschema)
 [![GoDoc](https://godoc.org/github.com/alecthomas/jsonschema?status.svg)](https://godoc.org/github.com/alecthomas/jsonschema)
 
