@@ -266,15 +266,6 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 				AdditionalProperties: []byte("false"),
 			}
 			return rt
-		case reflect.Float32, reflect.Float64:
-			rt := &Type{
-				Type: "object",
-				PatternProperties: map[string]*Type{
-					"^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$": r.reflectTypeToSchema(definitions, t.Elem()),
-				},
-				AdditionalProperties: []byte("false"),
-			}
-			return rt
 		}
 
 		rt := &Type{
