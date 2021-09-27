@@ -57,19 +57,33 @@
       ]
     },
     "friends": {
-      "items": {
-        "type": "integer"
-      },
-      "type": "array",
+      "oneOf": [
+        {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
       "description": "list of IDs, omitted when empty"
     },
     "tags": {
-      "patternProperties": {
-        ".*": {
-          "additionalProperties": true
+      "oneOf": [
+        {
+          "patternProperties": {
+            ".*": {
+              "additionalProperties": true
+            }
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
         }
-      },
-      "type": "object"
+      ]
     },
     "TestFlag": {
       "type": "boolean"
@@ -87,16 +101,30 @@
       "format": "ipv4"
     },
     "photo": {
-      "type": "string",
-      "media": {
-        "binaryEncoding": "base64"
-      }
+      "oneOf": [
+        {
+          "type": "string",
+          "media": {
+            "binaryEncoding": "base64"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "photo2": {
-      "type": "string",
-      "media": {
-        "binaryEncoding": "base64"
-      }
+      "oneOf": [
+        {
+          "type": "string",
+          "media": {
+            "binaryEncoding": "base64"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "feeling": {
       "oneOf": [
@@ -152,40 +180,53 @@
       "type": "number"
     },
     "roles": {
-      "items": {
-        "enum": [
-          "admin",
-          "moderator",
-          "user"
-        ],
-        "type": "string"
-      },
-      "type": "array"
+      "oneOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "priorities": {
-      "items": {
-        "enum": [
-          -1,
-          0,
-          1
-        ],
-        "type": "integer"
-      },
-      "type": "array"
+      "oneOf": [
+        {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "offsets": {
-      "items": {
-        "enum": [
-          1.570796,
-          3.141592,
-          6.283185
-        ],
-        "type": "number"
-      },
-      "type": "array"
+      "oneOf": [
+        {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "raw": {
-      "additionalProperties": true
+      "oneOf": [
+        {
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "additionalProperties": false,
@@ -262,19 +303,33 @@
           ]
         },
         "friends": {
-          "items": {
-            "type": "integer"
-          },
-          "type": "array",
+          "oneOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "description": "list of IDs, omitted when empty"
         },
         "tags": {
-          "patternProperties": {
-            ".*": {
-              "additionalProperties": true
+          "oneOf": [
+            {
+              "patternProperties": {
+                ".*": {
+                  "additionalProperties": true
+                }
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
             }
-          },
-          "type": "object"
+          ]
         },
         "TestFlag": {
           "type": "boolean"
@@ -292,16 +347,30 @@
           "format": "ipv4"
         },
         "photo": {
-          "type": "string",
-          "media": {
-            "binaryEncoding": "base64"
-          }
+          "oneOf": [
+            {
+              "type": "string",
+              "media": {
+                "binaryEncoding": "base64"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "photo2": {
-          "type": "string",
-          "media": {
-            "binaryEncoding": "base64"
-          }
+          "oneOf": [
+            {
+              "type": "string",
+              "media": {
+                "binaryEncoding": "base64"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "feeling": {
           "oneOf": [
@@ -357,40 +426,53 @@
           "type": "number"
         },
         "roles": {
-          "items": {
-            "enum": [
-              "admin",
-              "moderator",
-              "user"
-            ],
-            "type": "string"
-          },
-          "type": "array"
+          "oneOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "priorities": {
-          "items": {
-            "enum": [
-              -1,
-              0,
-              1
-            ],
-            "type": "integer"
-          },
-          "type": "array"
+          "oneOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "offsets": {
-          "items": {
-            "enum": [
-              1.570796,
-              3.141592,
-              6.283185
-            ],
-            "type": "number"
-          },
-          "type": "array"
+          "oneOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "raw": {
-          "additionalProperties": true
+          "oneOf": [
+            {
+              "additionalProperties": true
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false,

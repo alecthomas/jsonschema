@@ -267,7 +267,12 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 				},
 				AdditionalProperties: []byte("false"),
 			}
-			return rt
+			return &Type{
+				OneOf: []*Type{
+					rt,
+					{Type: "null"},
+				},
+			}
 		}
 
 		rt := &Type{
@@ -277,13 +282,20 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			},
 		}
 		delete(rt.PatternProperties, "additionalProperties")
-		return rt
-
+		return &Type{
+			OneOf: []*Type{
+				rt,
+				{Type: "null"},
+			},
+		}
 	case reflect.Slice, reflect.Array:
 		returnType := &Type{}
 		if t == rawMessageType {
 			return &Type{
-				AdditionalProperties: []byte("true"),
+				OneOf: []*Type{
+					{AdditionalProperties: []byte("true")},
+					{Type: "null"},
+				},
 			}
 		}
 		if t.Kind() == reflect.Array {
@@ -293,12 +305,21 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		if t.Kind() == reflect.Slice && t.Elem() == byteSliceType.Elem() {
 			returnType.Type = "string"
 			returnType.Media = &Type{BinaryEncoding: "base64"}
-			return returnType
+			return &Type {
+				OneOf: []*Type {
+					returnType,
+					{Type: "null"},
+				},
+			}
 		}
 		returnType.Type = "array"
 		returnType.Items = r.reflectTypeToSchema(definitions, t.Elem())
-		return returnType
-
+		return &Type {
+			OneOf: []*Type {
+				returnType,
+				{Type: "null"},
+			},
+		}
 	case reflect.Interface:
 		return &Type{
 			AdditionalProperties: []byte("true"),
