@@ -87,6 +87,9 @@ type Type struct {
 	Default     interface{}   `json:"default,omitempty"`     // section 6.2
 	Format      string        `json:"format,omitempty"`      // section 7
 	Examples    []interface{} `json:"examples,omitempty"`    // section 7.4
+	// RFC draft-handrews-json-schema-validation-02, section 9.4
+	ReadOnly  bool `json:"readOnly,omitempty"`
+	WriteOnly bool `json:"writeOnly,omitempty"`
 	// RFC draft-wright-json-schema-hyperschema-00, section 4
 	Media          *Type  `json:"media,omitempty"`          // section 4.3
 	BinaryEncoding string `json:"binaryEncoding,omitempty"` // section 4.3
@@ -553,6 +556,12 @@ func (t *Type) stringKeywords(tags []string) {
 					t.Format = val
 					break
 				}
+			case "readOnly":
+				i, _ := strconv.ParseBool(val)
+				t.ReadOnly = i
+			case "writeOnly":
+				i, _ := strconv.ParseBool(val)
+				t.WriteOnly = i
 			case "default":
 				t.Default = val
 			case "example":

@@ -7,6 +7,7 @@
     "PublicNonExported",
     "id",
     "name",
+    "password",
     "TestFlag",
     "age",
     "email",
@@ -54,7 +55,12 @@
       "examples": [
         "joe",
         "lucy"
-      ]
+      ],
+      "readOnly": true
+    },
+    "password": {
+      "type": "string",
+      "writeOnly": true
     },
     "friends": {
       "items": {
@@ -212,6 +218,7 @@
         "PublicNonExported",
         "id",
         "name",
+        "password",
         "TestFlag",
         "age",
         "email",
@@ -259,7 +266,12 @@
           "examples": [
             "joe",
             "lucy"
-          ]
+          ],
+          "readOnly": true
+        },
+        "password": {
+          "type": "string",
+          "writeOnly": true
         },
         "friends": {
           "items": {
