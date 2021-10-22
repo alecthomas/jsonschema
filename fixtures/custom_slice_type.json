@@ -1,0 +1,28 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"$ref": "#/definitions/CustomSliceOuter",
+	"definitions": {
+		"CustomSliceOuter": {
+			"type": "object",
+			"required": [
+				"slice"
+			],
+			"additionalProperties": false,
+			"properties": {
+				"slice": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
+						}
+					]
+				}
+			}
+		}
+	}
+}

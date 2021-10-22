@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"github.com/iancoleman/orderedmap"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -178,6 +179,49 @@ func (TestYamlAndJson2) GetFieldDocString(fieldName string) string {
 	}
 }
 
+type CustomSliceOuter struct {
+	Slice CustomSliceType `json:"slice"`
+}
+
+type CustomSliceType []string
+
+func (CustomSliceType) JSONSchemaType() *Type {
+	return &Type{
+		OneOf: []*Type{{
+			Type: "string",
+		}, {
+			Type: "array",
+			Items: &Type{
+				Type: "string",
+			},
+		}},
+	}
+}
+
+type CustomMapType map[string]string
+
+func (CustomMapType) JSONSchemaType() *Type {
+	properties := orderedmap.New()
+	properties.Set("key", &Type{
+		Type: "string",
+	})
+	properties.Set("value", &Type{
+		Type: "string",
+	})
+	return &Type{
+		Type: "array",
+		Items: &Type{
+			Type:       "object",
+			Properties: properties,
+			Required:   []string{"key", "value"},
+		},
+	}
+}
+
+type CustomMapOuter struct {
+	MyMap CustomMapType `json:"my_map"`
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
@@ -226,6 +270,8 @@ func TestSchemaGeneration(t *testing.T) {
 		{&TestYamlAndJson{}, &Reflector{}, "fixtures/test_yaml_and_json.json"},
 		// {&TestYamlAndJson2{}, &Reflector{}, "fixtures/test_yaml_and_json2.json"},
 		{&CompactDate{}, &Reflector{}, "fixtures/compact_date.json"},
+		{&CustomSliceOuter{}, &Reflector{}, "fixtures/custom_slice_type.json"},
+		{&CustomMapOuter{}, &Reflector{}, "fixtures/custom_map_type.json"},
 	}
 
 	for _, tt := range tests {
