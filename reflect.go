@@ -258,6 +258,12 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		}
 
 	case reflect.Map:
+		if t.Implements(customStructType) {
+			v := reflect.New(t)
+			o := v.Interface().(customSchemaType)
+			return o.JSONSchemaType()
+		}
+
 		switch t.Key().Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			rt := &Type{
@@ -281,6 +287,11 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 
 	case reflect.Slice, reflect.Array:
 		returnType := &Type{}
+		if t.Implements(customStructType) {
+			v := reflect.New(t)
+			o := v.Interface().(customSchemaType)
+			return o.JSONSchemaType()
+		}
 		if t == rawMessageType {
 			return &Type{
 				AdditionalProperties: []byte("true"),
