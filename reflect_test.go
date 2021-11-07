@@ -2,7 +2,6 @@ package jsonschema
 
 import (
 	"encoding/json"
-	"github.com/iancoleman/orderedmap"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -11,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/iancoleman/orderedmap"
 
 	"github.com/stretchr/testify/require"
 )
@@ -222,6 +223,12 @@ type CustomMapOuter struct {
 	MyMap CustomMapType `json:"my_map"`
 }
 
+type EnumWithConstants struct {
+	FloatValues  float32 `json:"float_values" jsonschema:"enum_const=14.5;16.789"`
+	IntValues    int     `json:"int_values" jsonschema:"enum_const=1;3;6"`
+	StringValues string  `json:"string_values" jsonschema:"enum_const=budgie;duck;pigeon"`
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
@@ -272,6 +279,7 @@ func TestSchemaGeneration(t *testing.T) {
 		{&CompactDate{}, &Reflector{}, "fixtures/compact_date.json"},
 		{&CustomSliceOuter{}, &Reflector{}, "fixtures/custom_slice_type.json"},
 		{&CustomMapOuter{}, &Reflector{}, "fixtures/custom_map_type.json"},
+		{&EnumWithConstants{}, &Reflector{}, "fixtures/enum_with_constants.json"},
 	}
 
 	for _, tt := range tests {

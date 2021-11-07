@@ -517,6 +517,33 @@ func (t *Type) genericKeywords(tags []string, parentType *Type, propertyName str
 					f, _ := strconv.ParseFloat(val, 64)
 					t.Enum = append(t.Enum, f)
 				}
+			case "enum_const":
+				if t.OneOf == nil {
+					t.OneOf = make([]*Type, 0, 1)
+				}
+				constants := strings.Split(nameValue[1], ";")
+				for _, constantVal := range constants {
+					switch t.Type {
+					case "string":
+						t.Enum = append(t.Enum, constantVal)
+						t.OneOf = append(t.OneOf, &Type{
+							Constant: constantVal,
+						})
+					case "integer":
+						i, _ := strconv.Atoi(constantVal)
+						t.Enum = append(t.Enum, i)
+						t.OneOf = append(t.OneOf, &Type{
+							Constant: i,
+						})
+					case "number":
+						f, _ := strconv.ParseFloat(constantVal, 64)
+						t.Enum = append(t.Enum, f)
+						t.OneOf = append(t.OneOf, &Type{
+							Constant: f,
+						})
+					}
+				}
+				t.Type = ""
 			}
 		}
 	}

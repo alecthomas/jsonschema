@@ -1,0 +1,67 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/EnumWithConstants",
+    "definitions": {
+        "EnumWithConstants": {
+            "required": [
+                "float_values",
+                "int_values",
+                "string_values"
+            ],
+            "properties": {
+                "float_values": {
+                    "enum": [
+                        14.5,
+                        16.789
+                    ],
+                    "oneOf": [
+                        {
+                            "const": 14.5
+                        },
+                        {
+                            "const": 16.789
+                        }
+                    ]
+                },
+                "int_values": {
+                    "enum": [
+                        1,
+                        3,
+                        6
+                    ],
+                    "oneOf": [
+                        {
+                            "const": 1
+                        },
+                        {
+                            "const": 3
+                        },
+                        {
+                            "const": 6
+                        }
+                    ]
+                },
+                "string_values": {
+                    "enum": [
+                        "budgie",
+                        "duck",
+                        "pigeon"
+                    ],
+                    "oneOf": [
+                        {
+                            "const": "budgie"
+                        },
+                        {
+                            "const": "duck"
+                        },
+                        {
+                            "const": "pigeon"
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "type": "object"
+        }
+    }
+}
