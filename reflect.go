@@ -90,8 +90,8 @@ type Type struct {
 	// RFC draft-wright-json-schema-hyperschema-00, section 4
 	Media          *Type  `json:"media,omitempty"`          // section 4.3
 	BinaryEncoding string `json:"binaryEncoding,omitempty"` // section 4.3
-	// I believe this is draft-06
-	Constant interface{} `json:"const,omitempty"` // section ?.?
+	// RFC draft-wright-json-schema-validation-01
+	Constant interface{} `json:"const,omitempty"` // section 6.24
 
 	Extras map[string]interface{} `json:"-"`
 }
