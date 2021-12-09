@@ -150,7 +150,7 @@ type Reflector struct {
 	// switching to just allowing additional properties instead.
 	IgnoredTypes []interface{}
 
-	// TypeMapper is a function that can be used to map custom Go types to jsconschema types.
+	// TypeMapper is a function that can be used to map custom Go types to jsonschema types.
 	TypeMapper func(reflect.Type) *Type
 
 	// TypeNamer allows customizing of type names
