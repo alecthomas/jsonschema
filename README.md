@@ -244,6 +244,64 @@ whereas without the flag one obtains:
 }
 ```
 
+### Using Go Comments
+
+Writing a good schema with descriptions inside tags can become cumbersome and tedious, especially if you already have some Go comments around your types and field definitions. If you'd like to take advantage of these existing comments, you can use the `AddGoComments(base, path string)` method that forms part of the reflector to parse your go files and automatically generate a dictionary of Go import paths, types, and fields, to individual comments. These will then be used automatically as description fields, and can be overridden with a manual definition if needed.
+
+Take a simplified example of a User struct which for the sake of simplicity we assume is defined inside this package:
+
+```go
+package main
+
+// User is used as a base to provide tests for comments.
+type User struct {
+	// Unique sequential identifier.
+	ID int `json:"id" jsonschema:"required"`
+	// Name of the user
+	Name string `json:"name"`
+}
+```
+
+To get the comments provided into your JSON schema, use a regular `Reflector` and add the go code using an import module URL and path. Fully qualified go module paths cannot be determined reliably by the `go/parser` library, so we need to introduce this manually:
+
+```go
+r := new(Reflector)
+if err := r.AddGoComments("github.com/alecthomas/jsonschema", "./"); err != nil {
+  // deal with error
+}
+s := r.Reflect(&User{})
+// output
+```
+
+Expect the results to be similar to:
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/User",
+  "definitions": {
+    "User": {
+      "required": [
+        "id",
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Unique sequential identifier."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the user",
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "User is used as a base to provide tests for comments."
+    }
+  }
+}
+```
+
 ### Custom Type Definitions
 
 Sometimes it can be useful to have custom JSON Marshal and Unmarshal methods in your structs that automatically convert for example a string into an object.
