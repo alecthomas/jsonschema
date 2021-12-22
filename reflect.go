@@ -501,8 +501,6 @@ func (r *Reflector) lookupComment(t reflect.Type, name string) string {
 		n = n + "." + name
 	}
 
-	fmt.Printf("Lookup: %v\n", n)
-
 	return r.CommentMap[n]
 }
 
