@@ -2,7 +2,6 @@ package jsonschema
 
 import (
 	"encoding/json"
-	"github.com/iancoleman/orderedmap"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -11,6 +10,10 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/iancoleman/orderedmap"
+
+	"github.com/alecthomas/jsonschema/examples"
 
 	"github.com/stretchr/testify/require"
 )
@@ -286,6 +289,7 @@ func TestSchemaGeneration(t *testing.T) {
 		{&CustomSliceOuter{}, &Reflector{}, "fixtures/custom_slice_type.json"},
 		{&CustomMapOuter{}, &Reflector{}, "fixtures/custom_map_type.json"},
 		{&CustomTypeFieldWithInterface{}, &Reflector{}, "fixtures/custom_type_with_interface.json"},
+		{&examples.User{}, prepareCommentReflector(t), "fixtures/go_comments.json"},
 	}
 
 	for _, tt := range tests {
@@ -305,6 +309,13 @@ func TestSchemaGeneration(t *testing.T) {
 			require.Equal(t, string(expectedJSON), string(actualJSON))
 		})
 	}
+}
+
+func prepareCommentReflector(t *testing.T) *Reflector {
+	r := new(Reflector)
+	err := r.AddGoComments("github.com/alecthomas/jsonschema", "./examples")
+	require.NoError(t, err, "did not expect error while adding comments")
+	return r
 }
 
 func TestBaselineUnmarshal(t *testing.T) {
