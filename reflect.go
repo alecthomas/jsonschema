@@ -8,12 +8,21 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/fs"
 	"net"
 	"net/url"
+	gopath "path"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"go/ast"
+	"go/doc"
+	"go/parser"
+	"go/token"
 
 	"github.com/iancoleman/orderedmap"
 )
@@ -161,6 +170,22 @@ type Reflector struct {
 
 	// AdditionalFields allows adding structfields for a given type
 	AdditionalFields func(reflect.Type) []reflect.StructField
+
+	// CommentMap is a dictionary of fully qualified go types and fields to comment
+	// strings that will be used if a description has not already been provided in
+	// the tags. Types and fields are added to the package path using "." as a
+	// separator.
+	//
+	// Type descriptions should be defined like:
+	//
+	//   map[string]string{"github.com/alecthomas/jsonschema.Reflector": "A Reflector reflects values into a Schema."}
+	//
+	// And Fields defined as:
+	//
+	//   map[string]string{"github.com/alecthomas/jsonschema.Reflector.DoNotReference": "Do not reference definitions."}
+	//
+	// See also: AddGoComments
+	CommentMap map[string]string
 }
 
 // Reflect reflects to Schema from a value.
@@ -383,6 +408,7 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 		Type:                 "object",
 		Properties:           orderedmap.New(),
 		AdditionalProperties: []byte("false"),
+		Description:          r.lookupComment(t, ""),
 	}
 	if r.AllowAdditionalProperties {
 		st.AdditionalProperties = []byte("true")
@@ -428,6 +454,9 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 
 		property := r.reflectTypeToSchema(definitions, f.Type)
 		property.structKeywordsFromTags(f, st, name)
+		if property.Description == "" {
+			property.Description = r.lookupComment(t, f.Name)
+		}
 		if getFieldDocString != nil {
 			property.Description = getFieldDocString(f.Name)
 		}
@@ -460,6 +489,21 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 			}
 		}
 	}
+}
+
+func (r *Reflector) lookupComment(t reflect.Type, name string) string {
+	if r.CommentMap == nil {
+		return ""
+	}
+
+	n := fullyQualifiedTypeName(t)
+	if name != "" {
+		n = n + "." + name
+	}
+
+	fmt.Printf("Lookup: %v\n", n)
+
+	return r.CommentMap[n]
 }
 
 func (t *Type) structKeywordsFromTags(f reflect.StructField, parentType *Type, propertyName string) {
@@ -852,7 +896,91 @@ func (r *Reflector) typeName(t reflect.Type) string {
 		}
 	}
 	if r.FullyQualifyTypeNames {
-		return t.PkgPath() + "." + t.Name()
+		return fullyQualifiedTypeName(t)
 	}
 	return t.Name()
+}
+
+func fullyQualifiedTypeName(t reflect.Type) string {
+	return t.PkgPath() + "." + t.Name()
+}
+
+// AddGoComments will read all the go files contained in the provided path,
+// including sub-directories, in order to generate a dictionary of comments
+// associated with Types and Fields. The results will be added to the `CommentsMap`
+// to be included in Schema "description" fields.
+//
+// The `go/parser` library is used to extract all the comments and unfortunately doesn't
+// have a built-in way to determine the fully qualified name of a package. The `base` paremeter,
+// the URL used to import that package, is thus required to be able to match reflected types.
+//
+// When parsing type comments, we use the `go/doc`'s Synopsis method to extract the first phrase
+// only. Field comments, which tend to be much short, will include everything.
+func (r *Reflector) AddGoComments(base, path string) error {
+	if r.CommentMap == nil {
+		r.CommentMap = make(map[string]string)
+	}
+
+	fset := token.NewFileSet()
+	dict := make(map[string][]*ast.Package)
+	err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			d, err := parser.ParseDir(fset, path, nil, parser.ParseComments)
+			if err != nil {
+				return err
+			}
+			for _, v := range d {
+				// paths may have multiple packages, like for tests
+				k := gopath.Join(base, path)
+				dict[k] = append(dict[k], v)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	for pkg, p := range dict {
+		for _, f := range p {
+			gtxt := ""
+			typ := ""
+			ast.Inspect(f, func(n ast.Node) bool {
+				switch x := n.(type) {
+				case *ast.TypeSpec:
+					typ = x.Name.String()
+					if !ast.IsExported(typ) {
+						typ = ""
+					} else {
+						txt := x.Doc.Text()
+						if txt == "" && gtxt != "" {
+							txt = gtxt
+							gtxt = ""
+						}
+						txt = doc.Synopsis(txt)
+						r.CommentMap[fmt.Sprintf("%s.%s", pkg, typ)] = strings.TrimSpace(txt)
+					}
+				case *ast.Field:
+					txt := x.Doc.Text()
+					if typ != "" && txt != "" {
+						for _, n := range x.Names {
+							if ast.IsExported(n.String()) {
+								k := fmt.Sprintf("%s.%s.%s", pkg, typ, n)
+								r.CommentMap[k] = strings.TrimSpace(txt)
+							}
+						}
+					}
+				case *ast.GenDecl:
+					// remember for the next type
+					gtxt = x.Doc.Text()
+				}
+				return true
+			})
+		}
+	}
+
+	return nil
 }
