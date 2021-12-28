@@ -248,7 +248,7 @@ whereas without the flag one obtains:
 
 Sometimes it can be useful to have custom JSON Marshal and Unmarshal methods in your structs that automatically convert for example a string into an object.
 
-To override auto-generating an object type for your struct, implement the `JSONSchemaType() *Type` method and whatever is defined will be provided in the schema definitions.
+To override auto-generating an object type for your type, implement the `JSONSchemaType() *Type` method and whatever is defined will be provided in the schema definitions.
 
 Take the following simplified example of a `CompactDate` that only includes the Year and Month:
 

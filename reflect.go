@@ -30,14 +30,14 @@ type Schema struct {
 	Definitions Definitions
 }
 
-// customSchemaType is used to detect if the structure provides it's own
+// customSchemaType is used to detect if the type provides it's own
 // custom Schema Type definition to use instead. Very useful for situations
 // where there are custom JSON Marshal and Unmarshal methods.
 type customSchemaType interface {
 	JSONSchemaType() *Type
 }
 
-var customStructType = reflect.TypeOf((*customSchemaType)(nil)).Elem()
+var customType = reflect.TypeOf((*customSchemaType)(nil)).Elem()
 
 // customSchemaGetFieldDocString
 type customSchemaGetFieldDocString interface {
@@ -223,6 +223,16 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		return &Type{Ref: "#/definitions/" + r.typeName(t)}
 	}
 
+	if r.TypeMapper != nil {
+		if t := r.TypeMapper(t); t != nil {
+			return t
+		}
+	}
+
+	if rt := r.reflectCustomType(definitions, t); rt != nil {
+		return rt
+	}
+
 	// jsonpb will marshal protobuf enum options as either strings or integers.
 	// It will unmarshal either.
 	if t.Implements(protoEnumType) {
@@ -230,12 +240,6 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			{Type: "string"},
 			{Type: "integer"},
 		}}
-	}
-
-	if r.TypeMapper != nil {
-		if t := r.TypeMapper(t); t != nil {
-			return t
-		}
 	}
 
 	// Defined format types for JSON Schema Validation
@@ -258,12 +262,6 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		}
 
 	case reflect.Map:
-		if t.Implements(customStructType) {
-			v := reflect.New(t)
-			o := v.Interface().(customSchemaType)
-			return o.JSONSchemaType()
-		}
-
 		switch t.Key().Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			rt := &Type{
@@ -287,11 +285,6 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 
 	case reflect.Slice, reflect.Array:
 		returnType := &Type{}
-		if t.Implements(customStructType) {
-			v := reflect.New(t)
-			o := v.Interface().(customSchemaType)
-			return o.JSONSchemaType()
-		}
 		if t == rawMessageType {
 			return &Type{
 				AdditionalProperties: []byte("true"),
@@ -334,8 +327,35 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 	panic("unsupported type " + t.String())
 }
 
-// Refects a struct to a JSON Schema type.
+func (r *Reflector) reflectCustomType(definitions Definitions, t reflect.Type) *Type {
+	if t.Kind() == reflect.Ptr {
+		return r.reflectCustomType(definitions, t.Elem())
+	}
+
+	if t.Implements(customType) {
+		v := reflect.New(t)
+		o := v.Interface().(customSchemaType)
+		st := o.JSONSchemaType()
+		definitions[r.typeName(t)] = st
+		if r.DoNotReference {
+			return st
+		} else {
+			return &Type{
+				Version: Version,
+				Ref:     "#/definitions/" + r.typeName(t),
+			}
+		}
+	}
+
+	return nil
+}
+
+// Reflects a struct to a JSON Schema type.
 func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type {
+	if st := r.reflectCustomType(definitions, t); st != nil {
+		return st
+	}
+
 	for _, ignored := range r.IgnoredTypes {
 		if reflect.TypeOf(ignored) == t {
 			st := &Type{
@@ -353,27 +373,19 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 					Ref:     "#/definitions/" + r.typeName(t),
 				}
 			}
+		}
+	}
 
-		}
+	st := &Type{
+		Type:                 "object",
+		Properties:           orderedmap.New(),
+		AdditionalProperties: []byte("false"),
 	}
-	var st *Type
-	if t.Implements(customStructType) {
-		v := reflect.New(t)
-		o := v.Interface().(customSchemaType)
-		st = o.JSONSchemaType()
-		definitions[r.typeName(t)] = st
-	} else {
-		st = &Type{
-			Type:                 "object",
-			Properties:           orderedmap.New(),
-			AdditionalProperties: []byte("false"),
-		}
-		if r.AllowAdditionalProperties {
-			st.AdditionalProperties = []byte("true")
-		}
-		definitions[r.typeName(t)] = st
-		r.reflectStructFields(st, definitions, t)
+	if r.AllowAdditionalProperties {
+		st.AdditionalProperties = []byte("true")
 	}
+	definitions[r.typeName(t)] = st
+	r.reflectStructFields(st, definitions, t)
 
 	if r.DoNotReference {
 		return st
