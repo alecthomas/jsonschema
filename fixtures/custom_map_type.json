@@ -10,24 +10,28 @@
 			"additionalProperties": false,
 			"properties": {
 				"my_map": {
-					"items": {
-						"required": [
-							"key",
-							"value"
-						],
-						"properties": {
-							"key": {
-								"type": "string"
-							},
-							"value": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					},
-					"type": "array"
+					"$schema": "http://json-schema.org/draft-04/schema#",
+					"$ref": "#/definitions/CustomMapType"
 				}
 			}
+		},
+		"CustomMapType": {
+			"items": {
+				"required": [
+					"key",
+					"value"
+				],
+				"properties": {
+					"key": {
+						"type": "string"
+					},
+					"value": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"type": "array"
 		}
 	}
 }

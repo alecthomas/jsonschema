@@ -100,6 +100,19 @@ type CustomTypeField struct {
 	CreatedAt CustomTime
 }
 
+type CustomTimeWithInterface time.Time
+
+type CustomTypeFieldWithInterface struct {
+	CreatedAt CustomTimeWithInterface
+}
+
+func (CustomTimeWithInterface) JSONSchemaType() *Type {
+	return &Type{
+		Type:   "string",
+		Format: "date-time",
+	}
+}
+
 type RootOneOf struct {
 	Field1 string      `json:"field1" jsonschema:"oneof_required=group1"`
 	Field2 string      `json:"field2" jsonschema:"oneof_required=group2"`
@@ -272,6 +285,7 @@ func TestSchemaGeneration(t *testing.T) {
 		{&CompactDate{}, &Reflector{}, "fixtures/compact_date.json"},
 		{&CustomSliceOuter{}, &Reflector{}, "fixtures/custom_slice_type.json"},
 		{&CustomMapOuter{}, &Reflector{}, "fixtures/custom_map_type.json"},
+		{&CustomTypeFieldWithInterface{}, &Reflector{}, "fixtures/custom_type_with_interface.json"},
 	}
 
 	for _, tt := range tests {
