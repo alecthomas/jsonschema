@@ -11,7 +11,6 @@
           "type": "string"
         },
         "child3": {
-          "additionalProperties": true,
           "oneOf": [
             {
               "type": "string"
@@ -53,7 +52,6 @@
           "type": "string"
         },
         "field3": {
-          "additionalProperties": true,
           "oneOf": [
             {
               "type": "string"

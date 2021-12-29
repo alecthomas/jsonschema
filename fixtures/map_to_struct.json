@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/MapToStruct",
+  "definitions": {
+    "CompactDate": {
+      "pattern": "^[0-9]{4}-[0-1][0-9]$",
+      "type": "string",
+      "title": "Compact Date",
+      "description": "Short date that only includes year and month"
+    },
+    "MapToStruct": {
+      "required": [
+        "my_map"
+      ],
+      "properties": {
+        "my_map": {
+          "additionalProperties": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/CompactDate"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}

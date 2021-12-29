@@ -78,10 +78,7 @@ jsonschema.Reflect(&TestUser{})
         },
         "tags": {
           "type": "object",
-          "patternProperties": {
-            ".*": {
-              "additionalProperties": true
-            }
+          "additionalProperties": true
           },
           "a": "b",
           "foo": [

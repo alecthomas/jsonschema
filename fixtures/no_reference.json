@@ -64,11 +64,7 @@
       "description": "list of IDs, omitted when empty"
     },
     "tags": {
-      "patternProperties": {
-        ".*": {
-          "additionalProperties": true
-        }
-      },
+      "additionalProperties": true,
       "type": "object"
     },
     "TestFlag": {
@@ -184,9 +180,7 @@
       },
       "type": "array"
     },
-    "raw": {
-      "additionalProperties": true
-    }
+    "raw": {}
   },
   "additionalProperties": false,
   "type": "object",
@@ -269,11 +263,7 @@
           "description": "list of IDs, omitted when empty"
         },
         "tags": {
-          "patternProperties": {
-            ".*": {
-              "additionalProperties": true
-            }
-          },
+          "additionalProperties": true,
           "type": "object"
         },
         "TestFlag": {
@@ -389,9 +379,7 @@
           },
           "type": "array"
         },
-        "raw": {
-          "additionalProperties": true
-        }
+        "raw": {}
       },
       "additionalProperties": false,
       "type": "object"

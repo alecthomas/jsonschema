@@ -7,6 +7,7 @@
 package jsonschema
 
 import (
+	"bytes"
 	"encoding/json"
 	"net"
 	"net/url"
@@ -274,21 +275,25 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 			return rt
 		}
 
-		rt := &Type{
-			Type: "object",
-			PatternProperties: map[string]*Type{
-				".*": r.reflectTypeToSchema(definitions, t.Elem()),
-			},
+		prop, err := json.Marshal(r.reflectTypeToSchema(definitions, t.Elem()))
+		if err != nil {
+			panic(err)
 		}
-		delete(rt.PatternProperties, "additionalProperties")
+
+		if bytes.Equal(prop, []byte("{}")) {
+			prop = []byte("true")
+		}
+
+		rt := &Type{
+			Type:                 "object",
+			AdditionalProperties: prop,
+		}
 		return rt
 
 	case reflect.Slice, reflect.Array:
 		returnType := &Type{}
 		if t == rawMessageType {
-			return &Type{
-				AdditionalProperties: []byte("true"),
-			}
+			return &Type{}
 		}
 		if t.Kind() == reflect.Array {
 			returnType.MinItems = t.Len()
@@ -304,9 +309,7 @@ func (r *Reflector) reflectTypeToSchema(definitions Definitions, t reflect.Type)
 		return returnType
 
 	case reflect.Interface:
-		return &Type{
-			AdditionalProperties: []byte("true"),
-		}
+		return &Type{}
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
