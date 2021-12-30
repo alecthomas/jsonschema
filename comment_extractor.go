@@ -23,7 +23,7 @@ import (
 // the URL used to import that package, is thus required to be able to match reflected types.
 //
 // When parsing type comments, we use the `go/doc`'s Synopsis method to extract the first phrase
-// only. Field comments, which tend to be much short, will include everything.
+// only. Field comments, which tend to be much shorter, will include everything.
 func ExtractGoComments(base, path string, commentMap map[string]string) error {
 	fset := token.NewFileSet()
 	dict := make(map[string][]*ast.Package)
