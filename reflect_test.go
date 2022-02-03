@@ -237,7 +237,7 @@ type CustomMapOuter struct {
 }
 
 type PatternTest struct {
-	WithPattern string `json:"with_pattern" jsonschema:"pattern=[0-9]{1,4}"`
+	WithPattern string `json:"with_pattern" jsonschema:"minLength=1,pattern=[0-9]{1,4},maxLength=50"`
 }
 
 func TestSchemaGeneration(t *testing.T) {
