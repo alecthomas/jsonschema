@@ -2,7 +2,6 @@ package jsonschema
 
 import (
 	"encoding/json"
-	"github.com/iancoleman/orderedmap"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -11,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/iancoleman/orderedmap"
 
 	"github.com/stretchr/testify/require"
 )
@@ -235,6 +236,10 @@ type CustomMapOuter struct {
 	MyMap CustomMapType `json:"my_map"`
 }
 
+type PatternTest struct {
+	WithPattern string `json:"with_pattern" jsonschema:"pattern=[0-9]{1,4}"`
+}
+
 func TestSchemaGeneration(t *testing.T) {
 	tests := []struct {
 		typ       interface{}
@@ -286,6 +291,7 @@ func TestSchemaGeneration(t *testing.T) {
 		{&CustomSliceOuter{}, &Reflector{}, "fixtures/custom_slice_type.json"},
 		{&CustomMapOuter{}, &Reflector{}, "fixtures/custom_map_type.json"},
 		{&CustomTypeFieldWithInterface{}, &Reflector{}, "fixtures/custom_type_with_interface.json"},
+		{&PatternTest{}, &Reflector{}, "fixtures/commas_in_pattern.json"},
 	}
 
 	for _, tt := range tests {

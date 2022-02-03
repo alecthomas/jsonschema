@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/iancoleman/orderedmap"
 )
@@ -461,7 +462,7 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 
 func (t *Type) structKeywordsFromTags(f reflect.StructField, parentType *Type, propertyName string) {
 	t.Description = f.Tag.Get("jsonschema_description")
-	tags := strings.Split(f.Tag.Get("jsonschema"), ",")
+	tags := splitOnComma(f.Tag.Get("jsonschema"))
 	t.genericKeywords(tags, parentType, propertyName)
 	switch t.Type {
 	case "string":
@@ -846,4 +847,22 @@ func (r *Reflector) typeName(t reflect.Type) string {
 		return t.PkgPath() + "." + t.Name()
 	}
 	return t.Name()
+}
+
+// Only split if the rune after the comma is a letter
+// This way, we prevent splitting regexes
+func splitOnComma(tagString string) []string {
+	tags := make([]string, 0)
+	var lastRune rune = 0
+	lastSplit := 0
+
+	for i, chr := range tagString {
+		if lastRune == ',' && unicode.IsLetter(chr) {
+			tags = append(tags, tagString[lastSplit:i-1])
+			lastSplit = i
+		}
+		lastRune = chr
+	}
+	tags = append(tags, tagString[lastSplit:])
+	return tags
 }
