@@ -13,6 +13,8 @@ import (
 
 	"github.com/iancoleman/orderedmap"
 
+	"github.com/alecthomas/jsonschema/examples"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -56,10 +58,11 @@ type TestUser struct {
 	nonExported
 	MapType
 
-	ID      int                    `json:"id" jsonschema:"required"`
-	Name    string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20,pattern=.*,description=this is a property,title=the name,example=joe,example=lucy,default=alex"`
-	Friends []int                  `json:"friends,omitempty" jsonschema_description:"list of IDs, omitted when empty"`
-	Tags    map[string]interface{} `json:"tags,omitempty"`
+	ID       int                    `json:"id" jsonschema:"required"`
+	Name     string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20,pattern=.*,description=this is a property,title=the name,example=joe,example=lucy,default=alex,readOnly=true"`
+	Password string                 `json:"password" jsonschema:"writeOnly=true"`
+	Friends  []int                  `json:"friends,omitempty" jsonschema_description:"list of IDs, omitted when empty"`
+	Tags     map[string]interface{} `json:"tags,omitempty"`
 
 	TestFlag       bool
 	IgnoredCounter int `json:"-"`
@@ -292,6 +295,7 @@ func TestSchemaGeneration(t *testing.T) {
 		{&CustomMapOuter{}, &Reflector{}, "fixtures/custom_map_type.json"},
 		{&CustomTypeFieldWithInterface{}, &Reflector{}, "fixtures/custom_type_with_interface.json"},
 		{&PatternTest{}, &Reflector{}, "fixtures/commas_in_pattern.json"},
+		{&examples.User{}, prepareCommentReflector(t), "fixtures/go_comments.json"},
 	}
 
 	for _, tt := range tests {
@@ -311,6 +315,14 @@ func TestSchemaGeneration(t *testing.T) {
 			require.Equal(t, string(expectedJSON), string(actualJSON))
 		})
 	}
+}
+
+func prepareCommentReflector(t *testing.T) *Reflector {
+	t.Helper()
+	r := new(Reflector)
+	err := r.AddGoComments("github.com/alecthomas/jsonschema", "./examples")
+	require.NoError(t, err, "did not expect error while adding comments")
+	return r
 }
 
 func TestBaselineUnmarshal(t *testing.T) {

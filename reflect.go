@@ -88,6 +88,9 @@ type Type struct {
 	Default     interface{}   `json:"default,omitempty"`     // section 6.2
 	Format      string        `json:"format,omitempty"`      // section 7
 	Examples    []interface{} `json:"examples,omitempty"`    // section 7.4
+	// RFC draft-handrews-json-schema-validation-02, section 9.4
+	ReadOnly  bool `json:"readOnly,omitempty"`
+	WriteOnly bool `json:"writeOnly,omitempty"`
 	// RFC draft-wright-json-schema-hyperschema-00, section 4
 	Media          *Type  `json:"media,omitempty"`          // section 4.3
 	BinaryEncoding string `json:"binaryEncoding,omitempty"` // section 4.3
@@ -159,6 +162,22 @@ type Reflector struct {
 
 	// AdditionalFields allows adding structfields for a given type
 	AdditionalFields func(reflect.Type) []reflect.StructField
+
+	// CommentMap is a dictionary of fully qualified go types and fields to comment
+	// strings that will be used if a description has not already been provided in
+	// the tags. Types and fields are added to the package path using "." as a
+	// separator.
+	//
+	// Type descriptions should be defined like:
+	//
+	//   map[string]string{"github.com/alecthomas/jsonschema.Reflector": "A Reflector reflects values into a Schema."}
+	//
+	// And Fields defined as:
+	//
+	//   map[string]string{"github.com/alecthomas/jsonschema.Reflector.DoNotReference": "Do not reference definitions."}
+	//
+	// See also: AddGoComments
+	CommentMap map[string]string
 }
 
 // Reflect reflects to Schema from a value.
@@ -381,6 +400,7 @@ func (r *Reflector) reflectStruct(definitions Definitions, t reflect.Type) *Type
 		Type:                 "object",
 		Properties:           orderedmap.New(),
 		AdditionalProperties: []byte("false"),
+		Description:          r.lookupComment(t, ""),
 	}
 	if r.AllowAdditionalProperties {
 		st.AdditionalProperties = []byte("true")
@@ -426,6 +446,9 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 
 		property := r.reflectTypeToSchema(definitions, f.Type)
 		property.structKeywordsFromTags(f, st, name)
+		if property.Description == "" {
+			property.Description = r.lookupComment(t, f.Name)
+		}
 		if getFieldDocString != nil {
 			property.Description = getFieldDocString(f.Name)
 		}
@@ -458,6 +481,19 @@ func (r *Reflector) reflectStructFields(st *Type, definitions Definitions, t ref
 			}
 		}
 	}
+}
+
+func (r *Reflector) lookupComment(t reflect.Type, name string) string {
+	if r.CommentMap == nil {
+		return ""
+	}
+
+	n := fullyQualifiedTypeName(t)
+	if name != "" {
+		n = n + "." + name
+	}
+
+	return r.CommentMap[n]
 }
 
 func (t *Type) structKeywordsFromTags(f reflect.StructField, parentType *Type, propertyName string) {
@@ -554,6 +590,12 @@ func (t *Type) stringKeywords(tags []string) {
 					t.Format = val
 					break
 				}
+			case "readOnly":
+				i, _ := strconv.ParseBool(val)
+				t.ReadOnly = i
+			case "writeOnly":
+				i, _ := strconv.ParseBool(val)
+				t.WriteOnly = i
 			case "default":
 				t.Default = val
 			case "example":
@@ -844,7 +886,7 @@ func (r *Reflector) typeName(t reflect.Type) string {
 		}
 	}
 	if r.FullyQualifyTypeNames {
-		return t.PkgPath() + "." + t.Name()
+		return fullyQualifiedTypeName(t)
 	}
 	return t.Name()
 }
@@ -865,4 +907,17 @@ func splitOnComma(tagString string) []string {
 	}
 	tags = append(tags, tagString[lastSplit:])
 	return tags
+
+func fullyQualifiedTypeName(t reflect.Type) string {
+	return t.PkgPath() + "." + t.Name()
+}
+
+// AddGoComments will update the reflectors comment map with all the comments
+// found in the provided source directories. See the #ExtractGoComments method
+// for more details.
+func (r *Reflector) AddGoComments(base, path string) error {
+	if r.CommentMap == nil {
+		r.CommentMap = make(map[string]string)
+	}
+	return ExtractGoComments(base, path, r.CommentMap)
 }
